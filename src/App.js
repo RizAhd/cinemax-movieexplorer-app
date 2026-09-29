@@ -9,6 +9,7 @@ import Footer from './components/Footer';
 import BottomNav from './components/BottomNav';
 import BackToTop from './components/BackToTop';
 import PageFade from './components/PageFade';
+import ScrollManager from './components/ScrollManager';
 import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/Login';
 import Home from './pages/Home';
@@ -25,6 +26,9 @@ function App() {
       {/* CssBaseline applies the theme background and text color to the page */}
       <CssBaseline />
       <BrowserRouter>
+        {/* Keeps the scroll position right when the user changes page or presses Back */}
+        <ScrollManager />
+
         {/* This box is at least as tall as the screen, so the footer stays at the bottom.
             On phones a logged in user gets extra space at the bottom for the bottom bar. */}
         <Box
