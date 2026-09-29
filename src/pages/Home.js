@@ -40,6 +40,8 @@ function Home() {
     error,
     retry,
     genres,
+    heroMovies,
+    heroLoading,
     filters,
     setFilters,
     sortBy,
@@ -94,21 +96,17 @@ function Home() {
   // True when at least one filter is chosen
   const hasFilters = filters.genre !== '' || filters.year !== '' || filters.rating !== '';
 
-  // The banner slides through the first 10 trending movies that have a wide picture.
-  // It only shows for trending (no search text).
-  const heroMovies =
-    searchText === '' ? movies.filter((movie) => movie.backdrop_path).slice(0, 10) : [];
-
   return (
     <Container sx={{ py: 3 }}>
-      {!loading && !error && heroMovies.length > 0 && (
+      {/* The banner is always at the top. It has its own movies, so a search does not hide it. */}
+      {!heroLoading && heroMovies.length > 0 && (
         <Box sx={{ mb: 3 }}>
           <HeroBanner movies={heroMovies} />
         </Box>
       )}
 
       {/* Placeholder with the banner's size, so the page does not jump when it loads */}
-      {loading && searchText === '' && (
+      {heroLoading && (
         <Skeleton
           variant="rounded"
           sx={{ height: { xs: 360, md: 480 }, borderRadius: '24px', mb: 3 }}

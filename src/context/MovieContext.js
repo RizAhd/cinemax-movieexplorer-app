@@ -31,6 +31,11 @@ export function MovieProvider({ children }) {
   // The genre list for the filter dropdown
   const [genres, setGenres] = useState([]);
 
+  // The movies for the banner at the top of Home. They are loaded on their own, so the banner
+  // does not change when the user searches, filters or sorts.
+  const [heroMovies, setHeroMovies] = useState([]);
+  const [heroLoading, setHeroLoading] = useState(true);
+
   // Filters: '' means "all". genre is a genre id, year is a number like 1999,
   // rating is the lowest rating to show, like 7.
   const [filters, setFilters] = useState({ genre: '', year: '', rating: '' });
@@ -57,6 +62,39 @@ export function MovieProvider({ children }) {
         setGenres([]);
       });
   }, [user]);
+
+  // Load the banner movies (only when someone is logged in). The Retry button loads them again too.
+  useEffect(() => {
+    if (!user) {
+      return;
+    }
+
+    let ignore = false;
+    setHeroLoading(true);
+
+    getTrending(1)
+      .then((data) => {
+        if (!ignore) {
+          // Only movies with a wide picture, and only the first 10
+          setHeroMovies(data.results.filter((movie) => movie.backdrop_path).slice(0, 10));
+        }
+      })
+      .catch(() => {
+        // If this fails the banner is just hidden, the rest of the page still works
+        if (!ignore) {
+          setHeroMovies([]);
+        }
+      })
+      .finally(() => {
+        if (!ignore) {
+          setHeroLoading(false);
+        }
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, [user, retryCount]);
 
   // Runs when a user is logged in and every time the search text changes (loads page 1)
   useEffect(() => {
@@ -165,6 +203,8 @@ export function MovieProvider({ children }) {
     error,
     retry,
     genres,
+    heroMovies,
+    heroLoading,
     filters,
     setFilters,
     sortBy,
