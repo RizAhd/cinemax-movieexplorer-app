@@ -2,9 +2,7 @@ import Box from '@mui/material/Box';
 import Avatar from '@mui/material/Avatar';
 import Typography from '@mui/material/Typography';
 import PersonIcon from '@mui/icons-material/Person';
-
-// Start of every TMDb profile photo url
-const PROFILE_URL = 'https://image.tmdb.org/t/p/w185';
+import { PROFILE_URL } from '../services/tmdb';
 
 // Shows the main actors of a movie in a row that scrolls sideways
 function CastList({ cast }) {

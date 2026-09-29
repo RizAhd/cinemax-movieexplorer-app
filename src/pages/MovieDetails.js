@@ -13,9 +13,7 @@ import TrailerEmbed from '../components/TrailerEmbed';
 import ErrorMessage from '../components/ErrorMessage';
 import { getMovie } from '../services/movies';
 import { getErrorMessage } from '../services/errorMessage';
-
-// Start of every TMDb poster url
-const IMAGE_URL = 'https://image.tmdb.org/t/p/w500';
+import { IMAGE_URL } from '../services/tmdb';
 
 // Details page for one movie
 function MovieDetails() {

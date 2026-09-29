@@ -10,9 +10,7 @@ import StarIcon from '@mui/icons-material/Star';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import { useAppContext } from '../context/AppContext';
-
-// Start of every TMDb poster url
-const IMAGE_URL = 'https://image.tmdb.org/t/p/w500';
+import { IMAGE_URL } from '../services/tmdb';
 
 // Shows one movie: poster, title, year and rating.
 // Clicking the card opens the movie details page.
