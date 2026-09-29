@@ -55,7 +55,7 @@ function Login() {
     // Full height area with soft red and gold glows in the background
     <Box
       sx={(theme) => ({
-        minHeight: 'calc(100vh - 64px)',
+        minHeight: '70vh',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
