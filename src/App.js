@@ -6,6 +6,7 @@ import { useAppContext } from './context/AppContext';
 import { getTheme } from './theme';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import BottomNav from './components/BottomNav';
 import PageFade from './components/PageFade';
 import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/Login';
@@ -15,15 +16,23 @@ import Favorites from './pages/Favorites';
 
 function App() {
   // Get the current mode ('light' or 'dark') from the context
-  const { mode } = useAppContext();
+  const { mode, user } = useAppContext();
 
   return (
     <ThemeProvider theme={getTheme(mode)}>
       {/* CssBaseline applies the theme background and text color to the page */}
       <CssBaseline />
       <BrowserRouter>
-        {/* This box is at least as tall as the screen, so the footer stays at the bottom */}
-        <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+        {/* This box is at least as tall as the screen, so the footer stays at the bottom.
+            On phones a logged in user gets extra space at the bottom for the bottom bar. */}
+        <Box
+          sx={{
+            minHeight: '100vh',
+            display: 'flex',
+            flexDirection: 'column',
+            pb: user ? { xs: 8, sm: 0 } : 0,
+          }}
+        >
           {/* Navbar is inside BrowserRouter because its links need the router */}
           <Navbar />
 
@@ -65,6 +74,9 @@ function App() {
 
           <Footer />
         </Box>
+
+        {/* Bottom bar for phones (it hides itself when nobody is logged in) */}
+        <BottomNav />
       </BrowserRouter>
     </ThemeProvider>
   );

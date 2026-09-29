@@ -8,9 +8,6 @@ import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import Box from '@mui/material/Box';
 import MovieFilterIcon from '@mui/icons-material/MovieFilter';
-import HomeIcon from '@mui/icons-material/Home';
-import FavoriteIcon from '@mui/icons-material/Favorite';
-import LogoutIcon from '@mui/icons-material/Logout';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import { useAppContext } from '../context/AppContext';
@@ -74,7 +71,7 @@ function Navbar() {
           {/* component={Link} makes the button change page without reloading */}
           {user ? (
             <>
-              {/* Text buttons: hidden on phones, shown on bigger screens */}
+              {/* Text buttons: hidden on phones (the bottom bar has the links there) */}
               <Box sx={{ display: { xs: 'none', sm: 'flex' }, gap: 0.5 }}>
                 <Button
                   color={isActive('/') ? 'primary' : 'inherit'}
@@ -95,29 +92,6 @@ function Navbar() {
                 <Button color="inherit" onClick={handleSignOut}>
                   Sign out
                 </Button>
-              </Box>
-
-              {/* Icon buttons: shown on phones, hidden on bigger screens (they save space) */}
-              <Box sx={{ display: { xs: 'flex', sm: 'none' } }}>
-                <IconButton
-                  color={isActive('/') ? 'primary' : 'inherit'}
-                  component={Link}
-                  to="/"
-                  aria-label="home"
-                >
-                  <HomeIcon />
-                </IconButton>
-                <IconButton
-                  color={isActive('/favorites') ? 'primary' : 'inherit'}
-                  component={Link}
-                  to="/favorites"
-                  aria-label="favorites"
-                >
-                  <FavoriteIcon />
-                </IconButton>
-                <IconButton color="inherit" onClick={handleSignOut} aria-label="sign out">
-                  <LogoutIcon />
-                </IconButton>
               </Box>
             </>
           ) : (
