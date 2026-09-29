@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
@@ -14,137 +14,38 @@ import FilterBar from '../components/FilterBar';
 import HeroBanner from '../components/HeroBanner';
 import SectionTitle from '../components/SectionTitle';
 import ErrorMessage from '../components/ErrorMessage';
-import useDebounce from '../hooks/useDebounce';
 import useLocalStorage from '../hooks/useLocalStorage';
-import { getTrending, searchMovies, getGenres } from '../services/movies';
-import { getErrorMessage } from '../services/errorMessage';
+import { useMovies } from '../context/MovieContext';
 
-// Home page: shows trending movies, or search results when the user types
+// Home page: shows trending movies, or search results when the user types.
+// The movie data comes from MovieContext. This page decides how to show it.
 function Home() {
-  const [movies, setMovies] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  // The search text is saved in localStorage, so the last search is remembered
-  const [query, setQuery] = useLocalStorage('lastSearch', '');
+  const {
+    query,
+    setQuery,
+    searchText,
+    movies,
+    loading,
+    error,
+    retry,
+    genres,
+    loadMore,
+    loadingMore,
+    moreError,
+    clearMoreError,
+    hasMore,
+  } = useMovies();
 
   // Filters: '' means "all". genre is a genre id, year is a number like 1999,
   // rating is the lowest rating to show, like 7.
   const [filters, setFilters] = useState({ genre: '', year: '', rating: '' });
-  // The genre list for the dropdown
-  const [genres, setGenres] = useState([]);
 
   // How more movies are loaded: 'scroll' (infinite scroll) or 'button' (Load More button).
   // Saved in localStorage so the choice is remembered.
   const [loadMode, setLoadMode] = useLocalStorage('loadMode', 'scroll');
 
-  // For loading more pages
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [moreError, setMoreError] = useState('');
-
-  // Going up by one makes the first load run again (used by the Retry button)
-  const [retryCount, setRetryCount] = useState(0);
-
   // The invisible box at the bottom of the grid. When it comes into view, we load more.
   const bottomRef = useRef(null);
-  // Remembers the latest search text, so old answers can be ignored
-  const latestSearch = useRef('');
-
-  // Wait until the user stops typing before we search
-  const debouncedQuery = useDebounce(query, 500);
-  const searchText = debouncedQuery.trim();
-
-  // Load the genre names one time for the dropdown
-  useEffect(() => {
-    getGenres()
-      .then((list) => setGenres(list))
-      .catch(() => {
-        // If this fails the dropdown just stays empty, the rest of the page still works
-        setGenres([]);
-      });
-  }, []);
-
-  // Runs on first load and every time the search text changes (loads page 1)
-  useEffect(() => {
-    // If the user types again before this finishes, we ignore the old answer
-    let ignore = false;
-    latestSearch.current = searchText;
-
-    setLoading(true);
-    setError('');
-    setMoreError('');
-    setPage(1);
-
-    // No text means trending (one page only), some text means search
-    let request;
-    if (searchText === '') {
-      request = getTrending().then((results) => ({ results, totalPages: 1 }));
-    } else {
-      request = searchMovies(searchText, 1);
-    }
-
-    request
-      .then((data) => {
-        if (!ignore) {
-          setMovies(data.results);
-          setTotalPages(data.totalPages);
-        }
-      })
-      .catch((err) => {
-        if (!ignore) {
-          setError(getErrorMessage(err));
-        }
-      })
-      .finally(() => {
-        // Loading is over, whether it worked or not
-        if (!ignore) {
-          setLoading(false);
-        }
-      });
-
-    // Cleanup: runs before the next search starts
-    return () => {
-      ignore = true;
-    };
-  }, [searchText, retryCount]);
-
-  // Load the next page and add it to the list.
-  // Both the scroll watcher and the Load More button use this function.
-  const loadMore = useCallback(() => {
-    const noMorePages = page >= totalPages;
-    // Trending has one page, and we do not load while another load is running
-    if (searchText === '' || noMorePages || loading || loadingMore || moreError) {
-      return;
-    }
-
-    const nextPage = page + 1;
-    const requestedText = searchText;
-    setLoadingMore(true);
-
-    searchMovies(requestedText, nextPage)
-      .then((data) => {
-        // The user searched for something else in the meantime, so ignore this
-        if (latestSearch.current !== requestedText) {
-          return;
-        }
-        // TMDb can send the same movie twice, so we skip movies we already have
-        setMovies((oldMovies) => {
-          const oldIds = oldMovies.map((movie) => movie.id);
-          const newMovies = data.results.filter((movie) => !oldIds.includes(movie.id));
-          return [...oldMovies, ...newMovies];
-        });
-        setPage(nextPage);
-      })
-      .catch((err) => {
-        if (latestSearch.current === requestedText) {
-          setMoreError(getErrorMessage(err));
-        }
-      })
-      .finally(() => {
-        setLoadingMore(false);
-      });
-  }, [page, totalPages, loading, loadingMore, moreError, searchText]);
 
   // Infinite scroll: watch the bottom box and load the next page when it is visible
   useEffect(() => {
@@ -176,9 +77,6 @@ function Home() {
     // filters is in the list so we check again after a filter changes
     // (if few movies match, the bottom box stays visible and more pages load)
   }, [loadMode, loadMore, movies, filters]);
-
-  // Are there more pages to load? (only search results have pages)
-  const hasMore = searchText !== '' && page < totalPages;
 
   // Only the movies that match the chosen filters
   const visibleMovies = movies.filter((movie) => {
@@ -242,7 +140,7 @@ function Home() {
       {/* While loading, show grey placeholder cards instead of a spinner */}
       {loading && <MovieGrid loading />}
 
-      {error && <ErrorMessage message={error} onRetry={() => setRetryCount(retryCount + 1)} />}
+      {error && <ErrorMessage message={error} onRetry={retry} />}
 
       {/* Search finished but nothing was found */}
       {!loading && !error && movies.length === 0 && (
@@ -281,7 +179,7 @@ function Home() {
           )}
 
           {/* Retry clears the error, which lets the scroll watcher try again */}
-          {moreError && <ErrorMessage message={moreError} onRetry={() => setMoreError('')} />}
+          {moreError && <ErrorMessage message={moreError} onRetry={clearMoreError} />}
         </>
       )}
     </Container>
