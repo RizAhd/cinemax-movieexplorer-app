@@ -75,8 +75,11 @@ function Home() {
     // movies and filters are here so it checks again after a page or a filter change
   }, [searching, loadMore, movies, filters]);
 
-  // Only the movies that match the chosen filters
+  // Browsing: TMDb already applied the filters. Search results are filtered here (TMDb search cannot do it).
   const filteredMovies = movies.filter((movie) => {
+    if (!searching) {
+      return true;
+    }
     const movieGenres = movie.genre_ids || [];
     // release_date looks like "1999-10-15", so the first 4 letters are the year
     const movieYear = movie.release_date ? Number(movie.release_date.slice(0, 4)) : null;
@@ -191,7 +194,11 @@ function Home() {
         }}
       >
         <SectionTitle component="h1" mb={0}>
-          {searchText === '' ? 'Trending this week' : `Results for "${searchText}"`}
+          {searching
+            ? `Results for "${searchText}"`
+            : hasFilters
+              ? 'Movies matching your filters'
+              : 'Trending this week'}
         </SectionTitle>
 
         {/* Sort dropdown */}
@@ -227,7 +234,9 @@ function Home() {
       {/* Search finished but nothing was found */}
       {!loading && !error && movies.length === 0 && (
         <Typography color="text.secondary" sx={{ mt: 4, textAlign: 'center' }}>
-          No movies found for "{searchText}". Try another title.
+          {searching
+            ? `No movies found for "${searchText}". Try another title.`
+            : 'No movies match these filters. Try changing them.'}
         </Typography>
       )}
 

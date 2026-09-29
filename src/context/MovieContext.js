@@ -2,8 +2,19 @@ import { createContext, useContext, useState, useEffect, useRef, useCallback } f
 import { useAppContext } from './AppContext';
 import useDebounce from '../hooks/useDebounce';
 import useLocalStorage from '../hooks/useLocalStorage';
-import { getTrending, searchMovies, getGenres } from '../services/movies';
+import { getTrending, searchMovies, discoverMovies, getGenres } from '../services/movies';
 import { getErrorMessage } from '../services/errorMessage';
+
+// Search text first, then the filters, otherwise the trending list
+function fetchPage(searchText, filters, page) {
+  if (searchText !== '') {
+    return searchMovies(searchText, page, filters.year);
+  }
+  if (filters.genre !== '' || filters.year !== '' || filters.rating !== '') {
+    return discoverMovies(filters, page);
+  }
+  return getTrending(page);
+}
 
 // Shared box for the movie data (trending, search results, genres).
 // It lives above the pages, so the results stay when the user opens a movie and comes back.
@@ -47,8 +58,8 @@ export function MovieProvider({ children }) {
   // How the movies are sorted: '' (the order TMDb sent), 'rating', 'year-new', 'year-old' or 'title'
   const [sortBy, setSortBy] = useState('');
 
-  // Remembers the latest search text, so old answers can be ignored
-  const latestSearch = useRef('');
+  // The search and filters of the list on screen, so answers for an older list can be ignored
+  const latestRequest = useRef('');
 
   // Wait until the user stops typing before we search
   const debouncedQuery = useDebounce(query, 500);
@@ -100,26 +111,21 @@ export function MovieProvider({ children }) {
     };
   }, [user, retryCount]);
 
-  // Runs when a user is logged in and every time the search text changes (loads page 1)
+  // Loads page 1 when a user is logged in and whenever the search text or a filter changes
   useEffect(() => {
-    // Nobody is logged in, so there is nothing to load
     if (!user) {
       return;
     }
 
-    // If the user types again before this finishes, we ignore the old answer
     let ignore = false;
-    latestSearch.current = searchText;
+    latestRequest.current = JSON.stringify([searchText, filters]);
 
     setLoading(true);
     setError('');
     setMoreError('');
     setPage(1);
 
-    // No text means trending, some text means search. Both come in pages.
-    const request = searchText === '' ? getTrending(1) : searchMovies(searchText, 1);
-
-    request
+    fetchPage(searchText, filters, 1)
       .then((data) => {
         if (!ignore) {
           setMovies(data.results);
@@ -142,29 +148,22 @@ export function MovieProvider({ children }) {
     return () => {
       ignore = true;
     };
-  }, [user, searchText, retryCount]);
+  }, [user, searchText, filters, retryCount]);
 
-  // Load the next page and add it to the list.
-  // Both the scroll watcher and the Load More button use this function.
+  // Adds the next page to the list. The scroll watcher and the Load More button both use it.
   const loadMore = useCallback(() => {
-    const noMorePages = page >= totalPages;
-    // We do not load when there are no more pages, or while another load is running
-    if (noMorePages || loading || loadingMore || moreError) {
+    if (page >= totalPages || loading || loadingMore || moreError) {
       return;
     }
 
     const nextPage = page + 1;
-    const requestedText = searchText;
+    const requestedList = latestRequest.current;
     setLoadingMore(true);
 
-    // Same as the first load: trending when there is no search text, search otherwise
-    const request =
-      requestedText === '' ? getTrending(nextPage) : searchMovies(requestedText, nextPage);
-
-    request
+    fetchPage(searchText, filters, nextPage)
       .then((data) => {
-        // The user searched for something else in the meantime, so ignore this
-        if (latestSearch.current !== requestedText) {
+        // The search or a filter changed in the meantime, so this page is for an older list
+        if (latestRequest.current !== requestedList) {
           return;
         }
         // TMDb can send the same movie twice, so we skip movies we already have
@@ -176,14 +175,14 @@ export function MovieProvider({ children }) {
         setPage(nextPage);
       })
       .catch((err) => {
-        if (latestSearch.current === requestedText) {
+        if (latestRequest.current === requestedList) {
           setMoreError(getErrorMessage(err));
         }
       })
       .finally(() => {
         setLoadingMore(false);
       });
-  }, [page, totalPages, loading, loadingMore, moreError, searchText]);
+  }, [page, totalPages, loading, loadingMore, moreError, searchText, filters]);
 
   // Are there more pages to load?
   const hasMore = page < totalPages;

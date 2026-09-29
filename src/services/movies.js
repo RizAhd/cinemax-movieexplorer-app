@@ -48,10 +48,37 @@ export async function getMovie(id) {
 }
 
 // Search movies by name. TMDb sends results in pages of about 20 movies.
+// year is optional and keeps only movies released in that year.
 // Returns { results: [movies], totalPages: number }
-export async function searchMovies(query, page = 1) {
-  const response = await tmdb.get('/search/movie', {
-    params: { query: query, page: page },
-  });
+export async function searchMovies(query, page = 1, year = '') {
+  const params = { query, page };
+  if (year !== '') {
+    params.primary_release_year = year;
+  }
+  const response = await tmdb.get('/search/movie', { params });
+  return toPage(response.data);
+}
+
+// Find movies by genre, year and rating. Empty filters are left out.
+// filters = { genre: genre id, year: 1999, rating: lowest rating }
+// Returns { results: [movies], totalPages: number }
+export async function discoverMovies(filters, page = 1) {
+  const params = {
+    page,
+    include_adult: false,
+    sort_by: 'popularity.desc',
+    // Without a minimum number of votes, a "9+" filter would show movies with three votes
+    'vote_count.gte': 50,
+  };
+  if (filters.genre !== '') {
+    params.with_genres = filters.genre;
+  }
+  if (filters.year !== '') {
+    params.primary_release_year = filters.year;
+  }
+  if (filters.rating !== '') {
+    params['vote_average.gte'] = filters.rating;
+  }
+  const response = await tmdb.get('/discover/movie', { params });
   return toPage(response.data);
 }
