@@ -15,11 +15,13 @@ function MovieGrid({ movies = [], loading = false }) {
       sx={{
         display: 'grid',
         gap: 2,
+        // minmax(0, 1fr) makes every column the same width. A plain 1fr would let a long
+        // title (which cannot wrap) push its column wider than the others.
         gridTemplateColumns: {
-          xs: 'repeat(2, 1fr)',
-          sm: 'repeat(3, 1fr)',
-          md: 'repeat(4, 1fr)',
-          lg: 'repeat(5, 1fr)',
+          xs: 'repeat(2, minmax(0, 1fr))',
+          sm: 'repeat(3, minmax(0, 1fr))',
+          md: 'repeat(4, minmax(0, 1fr))',
+          lg: 'repeat(5, minmax(0, 1fr))',
         },
       }}
     >

@@ -162,7 +162,13 @@ function Home() {
           sx={{
             display: 'grid',
             gap: 2,
-            gridTemplateColumns: { xs: '1fr 1fr', md: '2fr 1fr 1fr 1fr' },
+            // minmax(0, ...) keeps the columns from growing when a field has long text
+            // Phone: 2 columns. Tablet: 3 columns. Desktop: search bar twice as wide + 3 dropdowns.
+            gridTemplateColumns: {
+              xs: 'repeat(2, minmax(0, 1fr))',
+              sm: 'repeat(3, minmax(0, 1fr))',
+              md: 'minmax(0, 2fr) repeat(3, minmax(0, 1fr))',
+            },
           }}
         >
           <Box sx={{ gridColumn: { xs: '1 / -1', md: 'auto' } }}>

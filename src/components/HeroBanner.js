@@ -58,7 +58,16 @@ function Slide({ movie, rank, active }) {
       />
 
       {/* Text and button, on top of the gradient */}
-      <Box sx={{ position: 'relative', p: { xs: 2.5, md: 5 }, pb: { xs: 6, md: 7 }, maxWidth: 640 }}>
+      {/* On bigger screens the text starts further right, so the left arrow never covers it */}
+      <Box
+        sx={{
+          position: 'relative',
+          p: { xs: 2.5, md: 5 },
+          px: { xs: 2.5, md: 10 },
+          pb: { xs: 6, md: 7 },
+          maxWidth: 640,
+        }}
+      >
         <Typography
           variant="overline"
           sx={{ color: 'primary.main', fontWeight: 800, letterSpacing: 2 }}

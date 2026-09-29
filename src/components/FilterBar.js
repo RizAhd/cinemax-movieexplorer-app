@@ -23,7 +23,7 @@ function FilterBar({ filters, genres, onChange }) {
 
   return (
     <>
-      {/* Genre dropdown. The empty value means "no filter". It gets a full row on small screens. */}
+      {/* Genre dropdown. The empty value means "no filter". It gets a full row on phones only. */}
       <TextField
         select
         fullWidth
@@ -31,7 +31,7 @@ function FilterBar({ filters, genres, onChange }) {
         value={filters.genre}
         onChange={(event) => onChange({ ...filters, genre: event.target.value })}
         slotProps={{ select: { MenuProps: smoothMenuProps } }}
-        sx={{ ...fieldStyle, gridColumn: { xs: '1 / -1', md: 'auto' } }}
+        sx={{ ...fieldStyle, gridColumn: { xs: '1 / -1', sm: 'auto' } }}
       >
         <MenuItem value="">All genres</MenuItem>
         {genres.map((genre) => (

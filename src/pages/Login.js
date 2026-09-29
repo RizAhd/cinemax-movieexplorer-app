@@ -58,18 +58,36 @@ function Login() {
     // Full height area with soft red and gold glows in the background
     <Box
       sx={(theme) => ({
+        position: 'relative',
         minHeight: '70vh',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         px: 2,
         py: 4,
-        background: `radial-gradient(circle at 15% 20%, ${alpha(theme.palette.primary.main, 0.35)}, transparent 45%), radial-gradient(circle at 85% 80%, ${alpha(theme.palette.secondary.main, 0.2)}, transparent 45%)`,
       })}
     >
+      {/* Soft red and gold glows behind the card. They fade out at the bottom, so there is no hard edge. */}
+      <Box
+        sx={(theme) => ({
+          position: 'absolute',
+          inset: 0,
+          pointerEvents: 'none',
+          background: `radial-gradient(circle at 15% 20%, ${alpha(theme.palette.primary.main, 0.35)}, transparent 45%), radial-gradient(circle at 85% 80%, ${alpha(theme.palette.secondary.main, 0.2)}, transparent 45%)`,
+          maskImage: 'linear-gradient(to bottom, black 50%, transparent 100%)',
+          WebkitMaskImage: 'linear-gradient(to bottom, black 50%, transparent 100%)',
+        })}
+      />
+
       <Paper
         elevation={8}
-        sx={{ width: '100%', maxWidth: 420, p: { xs: 3, sm: 5 }, borderRadius: '24px' }}
+        sx={{
+          position: 'relative',
+          width: '100%',
+          maxWidth: 420,
+          p: { xs: 3, sm: 5 },
+          borderRadius: '24px',
+        }}
       >
         {/* Logo and welcome text */}
         <Box sx={{ textAlign: 'center', mb: 3 }}>

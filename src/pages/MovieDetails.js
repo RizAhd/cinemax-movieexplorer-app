@@ -86,7 +86,8 @@ function MovieDetails() {
 
   return (
     <Container sx={{ py: 3 }}>
-      <Button component={Link} to="/" startIcon={<ArrowBackIcon />} sx={{ mb: 2 }}>
+      {/* ml -2.5 cancels the button's own left padding, so its text lines up with the page edge */}
+      <Button component={Link} to="/" startIcon={<ArrowBackIcon />} sx={{ mb: 2, ml: -2.5 }}>
         Back
       </Button>
 
@@ -105,7 +106,8 @@ function MovieDetails() {
             sx={{
               position: 'relative',
               height: { xs: 200, md: 340 },
-              borderRadius: '24px',
+              // Only the top corners are round. The bottom fades into the page.
+              borderRadius: '24px 24px 0 0',
               overflow: 'hidden',
               bgcolor: 'action.hover',
               backgroundImage: movie.backdrop_path ? `url(${BACKDROP_URL + movie.backdrop_path})` : 'none',
@@ -245,19 +247,31 @@ function MovieDetails() {
             </Box>
           </Box>
 
-          {/* Sections under the header */}
-          <Box sx={{ mt: 5 }}>
-            <SectionTitle>Overview</SectionTitle>
-            <Typography sx={{ maxWidth: 800, lineHeight: 1.8 }}>
-              {movie.overview || 'No overview available.'}
-            </Typography>
-          </Box>
+          {/* Overview and trailer: side by side on bigger screens, one under the other on phones */}
+          <Box
+            sx={{
+              mt: 5,
+              display: 'grid',
+              gap: 5,
+              gridTemplateColumns: {
+                xs: 'minmax(0, 1fr)',
+                md: 'minmax(0, 1fr) minmax(0, 1.4fr)',
+              },
+            }}
+          >
+            <Box>
+              <SectionTitle>Overview</SectionTitle>
+              <Typography sx={{ lineHeight: 1.8 }}>
+                {movie.overview || 'No overview available.'}
+              </Typography>
+            </Box>
 
-          {/* Trailer (the videos came with the movie because of append_to_response) */}
-          {/* scrollMarginTop leaves room for the sticky navbar when we scroll here */}
-          <Box id="trailer" sx={{ mt: 5, scrollMarginTop: '90px' }}>
-            <SectionTitle>Trailer</SectionTitle>
-            <TrailerEmbed videos={movie.videos.results} />
+            {/* Trailer (the videos came with the movie because of append_to_response).
+                scrollMarginTop leaves room for the sticky navbar when we scroll here. */}
+            <Box id="trailer" sx={{ scrollMarginTop: '90px' }}>
+              <SectionTitle>Trailer</SectionTitle>
+              <TrailerEmbed videos={movie.videos.results} />
+            </Box>
           </Box>
 
           {/* Cast (it came with the movie because of append_to_response) */}
