@@ -6,6 +6,7 @@ import Box from '@mui/material/Box';
 import MovieGrid from '../components/MovieGrid';
 import SearchBar from '../components/SearchBar';
 import useDebounce from '../hooks/useDebounce';
+import useLocalStorage from '../hooks/useLocalStorage';
 import { getTrending, searchMovies } from '../services/movies';
 
 // Home page: shows trending movies, or search results when the user types
@@ -13,7 +14,8 @@ function Home() {
   const [movies, setMovies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [query, setQuery] = useState('');
+  // The search text is saved in localStorage, so the last search is remembered
+  const [query, setQuery] = useLocalStorage('lastSearch', '');
 
   // For infinite scroll
   const [page, setPage] = useState(1);
