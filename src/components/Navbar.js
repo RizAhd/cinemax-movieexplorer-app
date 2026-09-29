@@ -95,14 +95,27 @@ function Navbar() {
               </Box>
             </>
           ) : (
-            <Button
-              color={isActive('/login') ? 'primary' : 'inherit'}
-              component={Link}
-              to="/login"
-              sx={activeStyle('/login')}
-            >
-              Login
-            </Button>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.5, sm: 1 } }}>
+              {/* Smaller side padding on phones, so both buttons and the logo fit on one line */}
+              <Button
+                size="small"
+                color={isActive('/login') ? 'primary' : 'inherit'}
+                component={Link}
+                to="/login"
+                sx={[activeStyle('/login'), { px: { xs: 1.5, sm: 2.5 } }]}
+              >
+                Login
+              </Button>
+              <Button
+                size="small"
+                variant="contained"
+                component={Link}
+                to="/signup"
+                sx={{ px: { xs: 1.5, sm: 2.5 } }}
+              >
+                Sign up
+              </Button>
+            </Box>
           )}
 
           {/* Theme toggle: moon in light mode, sun in dark mode */}

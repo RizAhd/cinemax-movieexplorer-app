@@ -1,6 +1,6 @@
 import { createContext, useContext } from 'react';
 import useLocalStorage from '../hooks/useLocalStorage';
-import { loginUser } from '../services/auth';
+import { loginUser, registerUser } from '../services/auth';
 
 // Checks for the values we read from localStorage. A saved value that fails its check is ignored.
 const isValidMode = (value) => value === 'light' || value === 'dark';
@@ -33,6 +33,17 @@ export function AppProvider({ children }) {
     const result = await loginUser(identifier, password);
     if (result.ok) {
       // Save only what the app needs to know: first name, username and email
+      setUser(result.user);
+    }
+    return result;
+  };
+
+  // Create an account. If it works, the new user is logged in straight away.
+  // values = { firstName, username, email, password, confirm }
+  // Returns { ok: true } or { ok: false, errors: { field: message }, error: message }
+  const register = async (values) => {
+    const result = await registerUser(values);
+    if (result.ok) {
       setUser(result.user);
     }
     return result;
@@ -73,6 +84,7 @@ export function AppProvider({ children }) {
     toggleMode,
     user,
     login,
+    register,
     logout,
     favorites,
     isFavorite,
