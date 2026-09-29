@@ -31,6 +31,14 @@ export function MovieProvider({ children }) {
   // The genre list for the filter dropdown
   const [genres, setGenres] = useState([]);
 
+  // Filters: '' means "all". genre is a genre id, year is a number like 1999,
+  // rating is the lowest rating to show, like 7.
+  const [filters, setFilters] = useState({ genre: '', year: '', rating: '' });
+
+  // How more movies are loaded: 'scroll' (infinite scroll) or 'button' (Load More button).
+  // Saved in localStorage so the choice is remembered.
+  const [loadMode, setLoadMode] = useLocalStorage('loadMode', 'scroll');
+
   // Remembers the latest search text, so old answers can be ignored
   const latestSearch = useRef('');
 
@@ -159,6 +167,10 @@ export function MovieProvider({ children }) {
     error,
     retry,
     genres,
+    filters,
+    setFilters,
+    loadMode,
+    setLoadMode,
     loadMore,
     loadingMore,
     moreError,

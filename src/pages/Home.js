@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
@@ -14,7 +14,6 @@ import FilterBar from '../components/FilterBar';
 import HeroBanner from '../components/HeroBanner';
 import SectionTitle from '../components/SectionTitle';
 import ErrorMessage from '../components/ErrorMessage';
-import useLocalStorage from '../hooks/useLocalStorage';
 import { useMovies } from '../context/MovieContext';
 
 // Home page: shows trending movies, or search results when the user types.
@@ -29,20 +28,16 @@ function Home() {
     error,
     retry,
     genres,
+    filters,
+    setFilters,
+    loadMode,
+    setLoadMode,
     loadMore,
     loadingMore,
     moreError,
     clearMoreError,
     hasMore,
   } = useMovies();
-
-  // Filters: '' means "all". genre is a genre id, year is a number like 1999,
-  // rating is the lowest rating to show, like 7.
-  const [filters, setFilters] = useState({ genre: '', year: '', rating: '' });
-
-  // How more movies are loaded: 'scroll' (infinite scroll) or 'button' (Load More button).
-  // Saved in localStorage so the choice is remembered.
-  const [loadMode, setLoadMode] = useLocalStorage('loadMode', 'scroll');
 
   // The invisible box at the bottom of the grid. When it comes into view, we load more.
   const bottomRef = useRef(null);
