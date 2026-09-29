@@ -282,16 +282,26 @@ function Home() {
           {/* Scroll mode: this empty box is what the scroll watcher looks at */}
           {loadMode === 'scroll' && <Box ref={bottomRef} sx={{ height: 1 }} />}
 
-          {/* Button mode: a button to load the next page */}
-          {loadMode === 'button' && hasMore && !loadingMore && !moreError && (
+          {/* Button mode: a button to load the next page. It stays on screen while loading,
+              is disabled, and shows its own spinner, so the user always sees something is happening. */}
+          {loadMode === 'button' && hasMore && !moreError && (
             <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
-              <Button variant="outlined" size="large" onClick={loadMore} endIcon={<ExpandMoreIcon />}>
-                Load more movies
+              <Button
+                variant="outlined"
+                size="large"
+                onClick={loadMore}
+                disabled={loadingMore}
+                sx={{ minWidth: 220 }}
+                startIcon={loadingMore ? <CircularProgress size={18} color="inherit" /> : null}
+                endIcon={loadingMore ? null : <ExpandMoreIcon />}
+              >
+                {loadingMore ? 'Loading...' : 'Load more movies'}
               </Button>
             </Box>
           )}
 
-          {loadingMore && (
+          {/* Scroll mode has no button, so it shows a spinner at the bottom while it loads */}
+          {loadMode === 'scroll' && loadingMore && (
             <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
               <CircularProgress />
             </Box>

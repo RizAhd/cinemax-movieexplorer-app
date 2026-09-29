@@ -40,7 +40,9 @@ export function MovieProvider({ children }) {
 
   // How more movies are loaded: 'button' (Load More button) or 'scroll' (infinite scroll).
   // The button is the default. The choice is saved in localStorage.
-  const [loadMode, setLoadMode] = useLocalStorage('loadMode', 'button');
+  // The key ends with V2 on purpose: browsers that saved 'scroll' under the old key
+  // ('loadMode') now start with the button too.
+  const [loadMode, setLoadMode] = useLocalStorage('loadModeV2', 'button');
 
   // Remembers the latest search text, so old answers can be ignored
   const latestSearch = useRef('');
