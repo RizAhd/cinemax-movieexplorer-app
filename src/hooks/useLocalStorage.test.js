@@ -1,24 +1,25 @@
 import { renderHook, act } from '@testing-library/react';
 import useLocalStorage from './useLocalStorage';
 
+const isText = (value) => typeof value === 'string';
+
 describe('useLocalStorage', () => {
-  // Start every test with an empty localStorage
   beforeEach(() => {
     localStorage.clear();
   });
 
-  test('uses the starting value when nothing is saved', () => {
+  test('starts with the initial value', () => {
     const { result } = renderHook(() => useLocalStorage('color', 'red'));
     expect(result.current[0]).toBe('red');
   });
 
-  test('uses the saved value when there is one', () => {
+  test('reads a saved value', () => {
     localStorage.setItem('color', JSON.stringify('blue'));
     const { result } = renderHook(() => useLocalStorage('color', 'red'));
     expect(result.current[0]).toBe('blue');
   });
 
-  test('saves a new value in localStorage', () => {
+  test('saves a new value', () => {
     const { result } = renderHook(() => useLocalStorage('color', 'red'));
 
     act(() => {
@@ -29,25 +30,20 @@ describe('useLocalStorage', () => {
     expect(localStorage.getItem('color')).toBe(JSON.stringify('green'));
   });
 
-  test('uses the starting value when the saved text is broken (not valid JSON)', () => {
+  test('broken JSON falls back to the initial value', () => {
     localStorage.setItem('color', '{oops');
     const { result } = renderHook(() => useLocalStorage('color', 'red'));
     expect(result.current[0]).toBe('red');
   });
 
-  test('ignores a saved value that fails the check function', () => {
-    // Somebody saved a number, but we only accept text
+  test('a value that fails the check is ignored', () => {
     localStorage.setItem('color', JSON.stringify(42));
-    const isText = (value) => typeof value === 'string';
-
     const { result } = renderHook(() => useLocalStorage('color', 'red', isText));
     expect(result.current[0]).toBe('red');
   });
 
-  test('keeps a saved value that passes the check function', () => {
+  test('a value that passes the check is kept', () => {
     localStorage.setItem('color', JSON.stringify('blue'));
-    const isText = (value) => typeof value === 'string';
-
     const { result } = renderHook(() => useLocalStorage('color', 'red', isText));
     expect(result.current[0]).toBe('blue');
   });

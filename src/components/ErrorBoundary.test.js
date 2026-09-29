@@ -1,7 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import ErrorBoundary from './ErrorBoundary';
 
-// A component that always crashes, to test the boundary
 function Bomb() {
   throw new Error('boom');
 }
@@ -9,7 +8,6 @@ function Bomb() {
 describe('ErrorBoundary', () => {
   let consoleSpy;
 
-  // React and our boundary both write the crash to console.error. We hide it to keep the test output clean.
   beforeEach(() => {
     consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
   });
@@ -18,7 +16,7 @@ describe('ErrorBoundary', () => {
     consoleSpy.mockRestore();
   });
 
-  test('shows the normal content when nothing crashes', () => {
+  test('shows the children when nothing crashes', () => {
     render(
       <ErrorBoundary>
         <p>All good</p>
@@ -27,7 +25,7 @@ describe('ErrorBoundary', () => {
     expect(screen.getByText('All good')).toBeInTheDocument();
   });
 
-  test('shows a friendly page with two buttons when a child crashes', () => {
+  test('shows the crash page with two buttons when a child crashes', () => {
     render(
       <ErrorBoundary>
         <Bomb />
@@ -38,16 +36,16 @@ describe('ErrorBoundary', () => {
     expect(screen.getByRole('button', { name: /go to home/i })).toBeInTheDocument();
   });
 
-  test('only replaces the part that is inside the boundary', () => {
+  test('only replaces what is inside the boundary', () => {
     render(
       <div>
-        <p>Outside the boundary</p>
+        <p>Outside</p>
         <ErrorBoundary>
           <Bomb />
         </ErrorBoundary>
       </div>
     );
-    expect(screen.getByText('Outside the boundary')).toBeInTheDocument();
+    expect(screen.getByText('Outside')).toBeInTheDocument();
     expect(screen.getByText('Something went wrong')).toBeInTheDocument();
   });
 });

@@ -1,19 +1,11 @@
-// SHA-256 turns any text into a fixed 64 letter code (a "hash"). The same text always gives the same
-// code, but you cannot turn the code back into the text. We use it so passwords are never saved as
-// plain text.
-
-// The browser has SHA-256 built in (crypto.subtle), but only on https:// pages and on localhost.
-// On a plain http:// address (for example a phone testing over Wi-Fi) it is missing,
-// so we also have our own version below. Both give exactly the same result (the tests check this).
-
-// Turns a list of numbers (bytes) into letters and digits like "3f9a..."
+// crypto.subtle only exists on https and localhost. This plain SHA-256 covers http pages
+// (for example testing on a phone over wifi). The tests check both give the same result.
 function bytesToHex(bytes) {
   return Array.from(bytes)
     .map((byte) => byte.toString(16).padStart(2, '0'))
     .join('');
 }
 
-// The 64 fixed numbers that are part of the SHA-256 recipe
 const ROUND_CONSTANTS = [
   0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
   0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
@@ -25,18 +17,14 @@ const ROUND_CONSTANTS = [
   0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2,
 ];
 
-// Turns the bits of a number around to the right (the bits that fall off come back on the left)
 function rotateRight(value, amount) {
   return (value >>> amount) | (value << (32 - amount));
 }
 
-// Our own SHA-256. It follows the standard recipe step by step.
-// Returns the hash as 64 letters and digits.
 export function sha256Fallback(text) {
   const message = new TextEncoder().encode(text);
   const messageLength = message.length;
 
-  // Step 1: pad the message with a 1 bit, zeros, and its length, so its size is a multiple of 64 bytes
   const paddedLength = (((messageLength + 8) >> 6) + 1) << 6;
   const padded = new Uint8Array(paddedLength);
   padded.set(message);
@@ -46,13 +34,11 @@ export function sha256Fallback(text) {
   view.setUint32(paddedLength - 8, Math.floor(bitLength / 0x100000000));
   view.setUint32(paddedLength - 4, bitLength >>> 0);
 
-  // Step 2: the starting values of the hash
   const hash = [
     0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19,
   ];
   const words = new Uint32Array(64);
 
-  // Step 3: mix in the message, 64 bytes at a time
   for (let offset = 0; offset < paddedLength; offset += 64) {
     for (let i = 0; i < 16; i++) {
       words[i] = view.getUint32(offset + i * 4);
@@ -92,12 +78,9 @@ export function sha256Fallback(text) {
     hash[7] = (hash[7] + h) | 0;
   }
 
-  // Step 4: write the 8 numbers as text
   return hash.map((number) => (number >>> 0).toString(16).padStart(8, '0')).join('');
 }
 
-// Hashes text with SHA-256. It uses the fast built-in version when the browser has it,
-// and our own version when it does not.
 export async function sha256Hex(text) {
   const builtIn = typeof crypto !== 'undefined' && crypto.subtle;
   if (builtIn) {
@@ -106,7 +89,7 @@ export async function sha256Hex(text) {
       const digest = await crypto.subtle.digest('SHA-256', data);
       return bytesToHex(new Uint8Array(digest));
     } catch (error) {
-      // If the built-in version fails for any reason, use ours
+      // fall through to the plain version
     }
   }
   return sha256Fallback(text);

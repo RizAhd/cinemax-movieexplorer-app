@@ -1,33 +1,31 @@
 import { getTrending, searchMovies, discoverMovies, getGenres, getMovie } from './movies';
 import tmdb from './tmdb';
 
-// We replace the real axios instance with a fake one, so the tests never use the internet
 jest.mock('./tmdb', () => ({
   __esModule: true,
   default: { get: jest.fn() },
 }));
 
-// Makes the fake API answer with the given data
 const answerWith = (data) => tmdb.get.mockResolvedValue({ data });
 
-describe('movie service with odd answers from the API', () => {
-  test('getTrending returns the movies and the number of pages', async () => {
+describe('movie service', () => {
+  test('getTrending returns the movies and the page count', async () => {
     answerWith({ results: [{ id: 1 }, { id: 2 }], total_pages: 7 });
     expect(await getTrending()).toEqual({ results: [{ id: 1 }, { id: 2 }], totalPages: 7 });
   });
 
-  test('getTrending gives an empty list and 1 page when the answer has no results', async () => {
+  test('getTrending copes with an answer without results', async () => {
     answerWith({});
     expect(await getTrending()).toEqual({ results: [], totalPages: 1 });
   });
 
-  test('searchMovies removes empty items from the list', async () => {
+  test('searchMovies drops empty items', async () => {
     answerWith({ results: [{ id: 1 }, null, { id: 3 }], total_pages: 2 });
     const page = await searchMovies('batman');
     expect(page.results).toEqual([{ id: 1 }, { id: 3 }]);
   });
 
-  test('searchMovies survives an answer that is not an object', async () => {
+  test('searchMovies copes with an answer that is not an object', async () => {
     answerWith('<html>error page</html>');
     expect(await searchMovies('batman')).toEqual({ results: [], totalPages: 1 });
   });
@@ -42,7 +40,7 @@ describe('movie service with odd answers from the API', () => {
     expect(tmdb.get).toHaveBeenLastCalledWith('/search/movie', { params: { query: 'batman', page: 1 } });
   });
 
-  test('discoverMovies sends every chosen filter to TMDb', async () => {
+  test('discoverMovies sends every chosen filter', async () => {
     answerWith({ results: [{ id: 1 }], total_pages: 4 });
     const page = await discoverMovies({ genre: 28, year: 2010, rating: 7 }, 3);
     expect(tmdb.get).toHaveBeenCalledWith('/discover/movie', {
@@ -57,7 +55,7 @@ describe('movie service with odd answers from the API', () => {
     expect(page).toEqual({ results: [{ id: 1 }], totalPages: 4 });
   });
 
-  test('discoverMovies leaves out the filters that are empty', async () => {
+  test('discoverMovies leaves out empty filters', async () => {
     answerWith({ results: [], total_pages: 1 });
     await discoverMovies({ genre: 35, year: '', rating: '' });
     const { params } = tmdb.get.mock.calls[0][1];
@@ -66,7 +64,7 @@ describe('movie service with odd answers from the API', () => {
     expect(params).not.toHaveProperty('vote_average.gte');
   });
 
-  test('getGenres gives an empty list when genres is missing or not a list', async () => {
+  test('getGenres gives an empty list for bad data', async () => {
     answerWith({ genres: 'nope' });
     expect(await getGenres()).toEqual([]);
     answerWith({});
@@ -74,7 +72,6 @@ describe('movie service with odd answers from the API', () => {
   });
 
   test('getMovie always gives arrays for genres, cast and videos', async () => {
-    // A movie that came without genres, credits and videos
     answerWith({ id: 5, title: 'Small Movie' });
     const movie = await getMovie(5);
     expect(movie.title).toBe('Small Movie');
@@ -96,7 +93,7 @@ describe('movie service with odd answers from the API', () => {
     expect(movie.videos.results[0].key).toBe('abc');
   });
 
-  test('getMovie throws when the answer is not a movie object', async () => {
+  test('getMovie throws when the answer is not a movie', async () => {
     answerWith('not a movie');
     await expect(getMovie(5)).rejects.toThrow();
     answerWith(null);

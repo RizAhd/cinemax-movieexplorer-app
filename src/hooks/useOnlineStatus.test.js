@@ -2,12 +2,12 @@ import { renderHook, act } from '@testing-library/react';
 import useOnlineStatus from './useOnlineStatus';
 
 describe('useOnlineStatus', () => {
-  test('starts as online', () => {
+  test('starts online', () => {
     const { result } = renderHook(() => useOnlineStatus());
     expect(result.current).toBe(true);
   });
 
-  test('turns false when the browser goes offline and true when it comes back', () => {
+  test('follows the offline and online events', () => {
     const { result } = renderHook(() => useOnlineStatus());
 
     act(() => {

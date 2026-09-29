@@ -1,10 +1,9 @@
 import { createTheme, responsiveFontSizes } from '@mui/material/styles';
 
-// Colors for light mode (warm light grey page, white cards)
 const lightPalette = {
   mode: 'light',
-  primary: { main: '#d32f2f' }, // red
-  secondary: { main: '#c77800' }, // darker gold, so the stars are easy to see on light backgrounds
+  primary: { main: '#d32f2f' },
+  secondary: { main: '#c77800' }, // darker gold, readable on a light background
   background: {
     default: '#f6f4f1',
     paper: '#ffffff',
@@ -15,10 +14,9 @@ const lightPalette = {
   },
 };
 
-// Colors for dark mode (almost black page, dark grey cards)
 const darkPalette = {
   mode: 'dark',
-  // lighter red so it is easy to see on dark, with dark text on it (white text is too faint on this red)
+  // dark text on the red, white text is too faint on it
   primary: { main: '#ef5350', contrastText: '#0b0b0f' },
   secondary: { main: '#ffc107' },
   background: {
@@ -31,16 +29,12 @@ const darkPalette = {
   },
 };
 
-// Give this function 'light' or 'dark' and it returns a MUI theme
 export function getTheme(mode) {
   const theme = createTheme({
     palette: mode === 'dark' ? darkPalette : lightPalette,
 
-    // Rounder corners everywhere
     shape: { borderRadius: 12 },
 
-    // Text styles. Inter is loaded in public/index.html, the other fonts are backups.
-    // Big headings are tight and bold, body text has roomy lines so it is easy to read.
     typography: {
       fontFamily: '"Inter", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
       h1: { fontSize: '3.5rem', fontWeight: 800, lineHeight: 1.1, letterSpacing: '-0.02em' },
@@ -58,9 +52,8 @@ export function getTheme(mode) {
       button: { fontWeight: 600, textTransform: 'none', letterSpacing: '0.01em' },
     },
 
-    // Change how some MUI components look everywhere in the app
     components: {
-      // For people who set "reduce motion" on their device: turn off animations and transitions
+      // turns animations off for people who asked for reduced motion
       MuiCssBaseline: {
         styleOverrides: `
           @media (prefers-reduced-motion: reduce) {
@@ -74,19 +67,16 @@ export function getTheme(mode) {
           }
         `,
       },
-      // Remove the grey overlay MUI adds to papers in dark mode
       MuiPaper: {
         styleOverrides: {
           root: { backgroundImage: 'none' },
         },
       },
-      // Pill shaped buttons
       MuiButton: {
         styleOverrides: {
           root: { borderRadius: 999, paddingLeft: 20, paddingRight: 20 },
         },
       },
-      // Bigger corners and a thin border on cards
       MuiCard: {
         styleOverrides: {
           root: ({ theme }) => ({
@@ -95,7 +85,6 @@ export function getTheme(mode) {
           }),
         },
       },
-      // Bolder text inside chips (genres)
       MuiChip: {
         styleOverrides: {
           root: { fontWeight: 600 },
@@ -104,6 +93,5 @@ export function getTheme(mode) {
     },
   });
 
-  // Makes the big headings a little smaller on small screens, by itself
   return responsiveFontSizes(theme);
 }
