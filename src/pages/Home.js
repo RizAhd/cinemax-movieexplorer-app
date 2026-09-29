@@ -73,7 +73,14 @@ function Home() {
 
       {error && <Typography color="error">{error}</Typography>}
 
-      {!loading && !error && <MovieGrid movies={movies} />}
+      {/* Search finished but nothing was found */}
+      {!loading && !error && movies.length === 0 && (
+        <Typography color="text.secondary" sx={{ mt: 4, textAlign: 'center' }}>
+          No movies found for "{searchText}". Try another title.
+        </Typography>
+      )}
+
+      {!loading && !error && movies.length > 0 && <MovieGrid movies={movies} />}
     </Container>
   );
 }
