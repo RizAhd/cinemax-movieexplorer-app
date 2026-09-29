@@ -4,6 +4,10 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
+import Box from '@mui/material/Box';
+import HomeIcon from '@mui/icons-material/Home';
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import LogoutIcon from '@mui/icons-material/Logout';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import { useAppContext } from '../context/AppContext';
@@ -31,16 +35,31 @@ function Navbar() {
         {/* component={Link} makes the button change page without reloading */}
         {user ? (
           <>
-            {/* Links for a logged in user */}
-            <Button color="inherit" component={Link} to="/">
-              Home
-            </Button>
-            <Button color="inherit" component={Link} to="/favorites">
-              Favorites
-            </Button>
-            <Button color="inherit" onClick={handleSignOut}>
-              Sign out
-            </Button>
+            {/* Text buttons: hidden on phones, shown on bigger screens */}
+            <Box sx={{ display: { xs: 'none', sm: 'flex' } }}>
+              <Button color="inherit" component={Link} to="/">
+                Home
+              </Button>
+              <Button color="inherit" component={Link} to="/favorites">
+                Favorites
+              </Button>
+              <Button color="inherit" onClick={handleSignOut}>
+                Sign out
+              </Button>
+            </Box>
+
+            {/* Icon buttons: shown on phones, hidden on bigger screens (they save space) */}
+            <Box sx={{ display: { xs: 'flex', sm: 'none' } }}>
+              <IconButton color="inherit" component={Link} to="/" aria-label="home">
+                <HomeIcon />
+              </IconButton>
+              <IconButton color="inherit" component={Link} to="/favorites" aria-label="favorites">
+                <FavoriteIcon />
+              </IconButton>
+              <IconButton color="inherit" onClick={handleSignOut} aria-label="sign out">
+                <LogoutIcon />
+              </IconButton>
+            </Box>
           </>
         ) : (
           <Button color="inherit" component={Link} to="/login">

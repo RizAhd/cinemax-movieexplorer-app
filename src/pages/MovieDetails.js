@@ -115,7 +115,8 @@ function MovieDetails() {
           {/* Text details */}
           {/* minWidth 0 lets the cast row scroll sideways instead of making the page wider */}
           <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Typography variant="h4" component="h1">
+            {/* Smaller title on phones so long names fit better */}
+            <Typography variant="h4" component="h1" sx={{ fontSize: { xs: '1.75rem', md: '2.125rem' } }}>
               {movie.title}
             </Typography>
 
