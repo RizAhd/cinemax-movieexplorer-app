@@ -9,6 +9,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import StarIcon from '@mui/icons-material/Star';
 import CastList from '../components/CastList';
+import TrailerEmbed from '../components/TrailerEmbed';
 import { getMovie } from '../services/movies';
 
 // Start of every TMDb poster url
@@ -142,6 +143,12 @@ function MovieDetails() {
               Overview
             </Typography>
             <Typography>{movie.overview || 'No overview available.'}</Typography>
+
+            {/* Trailer (the videos came with the movie because of append_to_response) */}
+            <Typography variant="h6" sx={{ mt: 3, mb: 1 }}>
+              Trailer
+            </Typography>
+            <TrailerEmbed videos={movie.videos.results} />
 
             {/* Cast (it came with the movie because of append_to_response) */}
             <Typography variant="h6" sx={{ mt: 3, mb: 1 }}>
