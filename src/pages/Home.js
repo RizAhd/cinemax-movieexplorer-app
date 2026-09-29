@@ -9,6 +9,7 @@ import Box from '@mui/material/Box';
 import MovieGrid from '../components/MovieGrid';
 import SearchBar from '../components/SearchBar';
 import FilterBar from '../components/FilterBar';
+import HeroBanner from '../components/HeroBanner';
 import ErrorMessage from '../components/ErrorMessage';
 import useDebounce from '../hooks/useDebounce';
 import useLocalStorage from '../hooks/useLocalStorage';
@@ -191,8 +192,18 @@ function Home() {
     return genreOk && yearOk && ratingOk;
   });
 
+  // The banner shows the first trending movie that has a wide picture.
+  // It only shows for trending (no search text).
+  const heroMovie = searchText === '' ? movies.find((movie) => movie.backdrop_path) : null;
+
   return (
     <Container sx={{ py: 3 }}>
+      {!loading && !error && heroMovie && (
+        <Box sx={{ mb: 3 }}>
+          <HeroBanner movie={heroMovie} />
+        </Box>
+      )}
+
       <Box sx={{ mb: 3 }}>
         <SearchBar value={query} onChange={setQuery} />
       </Box>
