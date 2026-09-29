@@ -4,6 +4,7 @@ import CssBaseline from '@mui/material/CssBaseline';
 import { useAppContext } from './context/AppContext';
 import { getTheme } from './theme';
 import Navbar from './components/Navbar';
+import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/Login';
 import Home from './pages/Home';
 import MovieDetails from './pages/MovieDetails';
@@ -23,9 +24,31 @@ function App() {
         {/* Each Route shows one page for one url */}
         <Routes>
           <Route path="/login" element={<Login />} />
-          <Route path="/" element={<Home />} />
-          <Route path="/movie/:id" element={<MovieDetails />} />
-          <Route path="/favorites" element={<Favorites />} />
+          {/* These pages need a logged in user */}
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <Home />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/movie/:id"
+            element={
+              <ProtectedRoute>
+                <MovieDetails />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/favorites"
+            element={
+              <ProtectedRoute>
+                <Favorites />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </BrowserRouter>
     </ThemeProvider>

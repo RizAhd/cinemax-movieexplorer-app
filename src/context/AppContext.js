@@ -22,7 +22,12 @@ export function AppProvider({ children }) {
     setUser({ username });
   };
 
-  const value = { mode, toggleMode, user, login };
+  // Sign out: clear the saved user
+  const logout = () => {
+    setUser(null);
+  };
+
+  const value = { mode, toggleMode, user, login, logout };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }

@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
@@ -10,8 +10,15 @@ import { useAppContext } from '../context/AppContext';
 
 // Top bar shown on every page, with the app name and page links
 function Navbar() {
-  // Get the current mode and the function that switches it
-  const { mode, toggleMode } = useAppContext();
+  // Get the mode, the user and the functions from the context
+  const { mode, toggleMode, user, logout } = useAppContext();
+  const navigate = useNavigate();
+
+  // Sign out and go back to the login page
+  const handleSignOut = () => {
+    logout();
+    navigate('/login');
+  };
 
   return (
     <AppBar position="static">
@@ -22,15 +29,24 @@ function Navbar() {
         </Typography>
 
         {/* component={Link} makes the button change page without reloading */}
-        <Button color="inherit" component={Link} to="/">
-          Home
-        </Button>
-        <Button color="inherit" component={Link} to="/favorites">
-          Favorites
-        </Button>
-        <Button color="inherit" component={Link} to="/login">
-          Login
-        </Button>
+        {user ? (
+          <>
+            {/* Links for a logged in user */}
+            <Button color="inherit" component={Link} to="/">
+              Home
+            </Button>
+            <Button color="inherit" component={Link} to="/favorites">
+              Favorites
+            </Button>
+            <Button color="inherit" onClick={handleSignOut}>
+              Sign out
+            </Button>
+          </>
+        ) : (
+          <Button color="inherit" component={Link} to="/login">
+            Login
+          </Button>
+        )}
 
         {/* Theme toggle: moon in light mode, sun in dark mode */}
         <IconButton color="inherit" onClick={toggleMode} aria-label="toggle theme">
