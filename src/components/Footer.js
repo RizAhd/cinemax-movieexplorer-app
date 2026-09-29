@@ -1,10 +1,9 @@
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
-import Link from '@mui/material/Link';
 import MovieFilterIcon from '@mui/icons-material/MovieFilter';
 
-// Bottom of every page: logo, copyright and the TMDb credit
+// Bottom of every page: logo, copyright and who made the app
 function Footer() {
   return (
     <Box
@@ -18,16 +17,11 @@ function Footer() {
           <Typography sx={{ fontWeight: 800, letterSpacing: 2 }}>CINEMAX</Typography>
         </Box>
 
-        {/* TMDb asks every app that uses its data to show this text */}
-        <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 520, mx: 'auto' }}>
-          This product uses the{' '}
-          <Link href="https://www.themoviedb.org" target="_blank" rel="noopener noreferrer">
-            TMDB
-          </Link>{' '}
-          API but is not endorsed or certified by TMDB.
+        <Typography variant="body2" color="text.secondary">
+          Developed by <strong>Riflan Mohamed</strong>
         </Typography>
 
-        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1.5 }}>
+        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
           © {new Date().getFullYear()} Cinemax Movie Explorer
         </Typography>
       </Container>
