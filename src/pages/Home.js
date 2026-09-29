@@ -5,6 +5,8 @@ import Button from '@mui/material/Button';
 import Paper from '@mui/material/Paper';
 import Skeleton from '@mui/material/Skeleton';
 import Switch from '@mui/material/Switch';
+import TextField from '@mui/material/TextField';
+import MenuItem from '@mui/material/MenuItem';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import CircularProgress from '@mui/material/CircularProgress';
 import LinearProgress from '@mui/material/LinearProgress';
@@ -17,6 +19,15 @@ import HeroBanner from '../components/HeroBanner';
 import SectionTitle from '../components/SectionTitle';
 import ErrorMessage from '../components/ErrorMessage';
 import { useMovies } from '../context/MovieContext';
+
+// The ways the user can sort the movies. The empty value keeps the order TMDb sent.
+const SORT_OPTIONS = [
+  { value: '', label: 'Default' },
+  { value: 'rating', label: 'Rating: high to low' },
+  { value: 'year-new', label: 'Newest first' },
+  { value: 'year-old', label: 'Oldest first' },
+  { value: 'title', label: 'Title: A to Z' },
+];
 
 // Home page: shows trending movies, or search results when the user types.
 // The movie data comes from MovieContext. This page decides how to show it.
@@ -32,6 +43,8 @@ function Home() {
     genres,
     filters,
     setFilters,
+    sortBy,
+    setSortBy,
     loadMode,
     setLoadMode,
     loadMore,
@@ -76,7 +89,7 @@ function Home() {
   }, [loadMode, loadMore, movies, filters]);
 
   // Only the movies that match the chosen filters
-  const visibleMovies = movies.filter((movie) => {
+  const filteredMovies = movies.filter((movie) => {
     const movieGenres = movie.genre_ids || [];
     // release_date looks like "1999-10-15", so the first 4 letters are the year
     const movieYear = movie.release_date ? Number(movie.release_date.slice(0, 4)) : null;
@@ -88,6 +101,31 @@ function Home() {
 
     // A movie must pass every filter
     return genreOk && yearOk && ratingOk;
+  });
+
+  // Put those movies in the order the user chose.
+  // The [...] makes a copy, because sort() would change the original list.
+  const visibleMovies = [...filteredMovies].sort((a, b) => {
+    // Movies without a date go to the end
+    const dateA = a.release_date || '';
+    const dateB = b.release_date || '';
+
+    if (sortBy === 'rating') {
+      return b.vote_average - a.vote_average;
+    }
+    if (sortBy === 'year-new') {
+      if (!dateA || !dateB) return !dateA ? 1 : -1;
+      return dateB.localeCompare(dateA);
+    }
+    if (sortBy === 'year-old') {
+      if (!dateA || !dateB) return !dateA ? 1 : -1;
+      return dateA.localeCompare(dateB);
+    }
+    if (sortBy === 'title') {
+      return a.title.localeCompare(b.title);
+    }
+    // Default: keep the order as it is
+    return 0;
   });
 
   // True when at least one filter is chosen
@@ -159,18 +197,39 @@ function Home() {
             )}
           </Box>
 
-          {/* Switch between infinite scroll and the Load More button */}
-          <FormControlLabel
-            control={
-              <Switch
-                size="small"
-                checked={loadMode === 'button'}
-                onChange={(event) => setLoadMode(event.target.checked ? 'button' : 'scroll')}
-              />
-            }
-            label={<Typography variant="body2">Use Load More button</Typography>}
-            sx={{ mr: 0 }}
-          />
+          <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
+            {/* Sort dropdown */}
+            <TextField
+              select
+              size="small"
+              label="Sort by"
+              value={sortBy}
+              onChange={(event) => setSortBy(event.target.value)}
+              sx={{
+                minWidth: 200,
+                '& .MuiOutlinedInput-root': { borderRadius: '12px', bgcolor: 'background.default' },
+              }}
+            >
+              {SORT_OPTIONS.map((option) => (
+                <MenuItem key={option.value} value={option.value}>
+                  {option.label}
+                </MenuItem>
+              ))}
+            </TextField>
+
+            {/* Switch between infinite scroll and the Load More button */}
+            <FormControlLabel
+              control={
+                <Switch
+                  size="small"
+                  checked={loadMode === 'button'}
+                  onChange={(event) => setLoadMode(event.target.checked ? 'button' : 'scroll')}
+                />
+              }
+              label={<Typography variant="body2">Use Load More button</Typography>}
+              sx={{ mr: 0 }}
+            />
+          </Box>
         </Box>
       </Paper>
 

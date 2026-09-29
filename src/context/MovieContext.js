@@ -35,6 +35,9 @@ export function MovieProvider({ children }) {
   // rating is the lowest rating to show, like 7.
   const [filters, setFilters] = useState({ genre: '', year: '', rating: '' });
 
+  // How the movies are sorted: '' (the order TMDb sent), 'rating', 'year-new', 'year-old' or 'title'
+  const [sortBy, setSortBy] = useState('');
+
   // How more movies are loaded: 'scroll' (infinite scroll) or 'button' (Load More button).
   // Saved in localStorage so the choice is remembered.
   const [loadMode, setLoadMode] = useLocalStorage('loadMode', 'scroll');
@@ -169,6 +172,8 @@ export function MovieProvider({ children }) {
     genres,
     filters,
     setFilters,
+    sortBy,
+    setSortBy,
     loadMode,
     setLoadMode,
     loadMore,
