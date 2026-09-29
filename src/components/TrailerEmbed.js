@@ -1,16 +1,23 @@
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 
-// Shows the YouTube trailer of a movie.
-// videos = the list of videos from TMDb (each has site, type and key)
-function TrailerEmbed({ videos }) {
+// Finds the best video to show from the list of TMDb videos.
+// Returns the video, or undefined if there is none.
+export function findTrailer(videos) {
   // Only YouTube videos can be embedded
   const youtubeVideos = videos.filter((video) => video.site === 'YouTube');
 
   // Prefer a real trailer, and use a teaser if there is no trailer
-  const trailer =
+  return (
     youtubeVideos.find((video) => video.type === 'Trailer') ||
-    youtubeVideos.find((video) => video.type === 'Teaser');
+    youtubeVideos.find((video) => video.type === 'Teaser')
+  );
+}
+
+// Shows the YouTube trailer of a movie.
+// videos = the list of videos from TMDb (each has site, type and key)
+function TrailerEmbed({ videos }) {
+  const trailer = findTrailer(videos);
 
   if (!trailer) {
     return <Typography color="text.secondary">No trailer available.</Typography>;

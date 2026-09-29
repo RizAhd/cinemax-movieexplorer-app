@@ -11,8 +11,13 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import LanguageIcon from '@mui/icons-material/Language';
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import CastList from '../components/CastList';
-import TrailerEmbed from '../components/TrailerEmbed';
+import TrailerEmbed, { findTrailer } from '../components/TrailerEmbed';
+import { useAppContext } from '../context/AppContext';
 import ErrorMessage from '../components/ErrorMessage';
 import RatingCircle from '../components/RatingCircle';
 import SectionTitle from '../components/SectionTitle';
@@ -24,6 +29,7 @@ import { IMAGE_URL, BACKDROP_URL } from '../services/tmdb';
 function MovieDetails() {
   // Read the movie id from the url, for example /movie/550
   const { id } = useParams();
+  const { isFavorite, toggleFavorite } = useAppContext();
 
   const [movie, setMovie] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -66,6 +72,17 @@ function MovieDetails() {
   const year = movie && movie.release_date ? movie.release_date.slice(0, 4) : '';
   const runtime = movie && movie.runtime ? `${movie.runtime} min` : '';
   const language = movie && movie.original_language ? movie.original_language.toUpperCase() : '';
+
+  // The trailer video (or nothing if the movie has none)
+  const trailer = movie ? findTrailer(movie.videos.results) : undefined;
+
+  // Scroll smoothly down to the trailer section
+  const scrollToTrailer = () => {
+    const section = document.getElementById('trailer');
+    if (section) {
+      section.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   return (
     <Container sx={{ py: 3 }}>
@@ -187,6 +204,44 @@ function MovieDetails() {
                   <Chip key={genre.id} label={genre.name} color="primary" />
                 ))}
               </Box>
+
+              {/* Action buttons */}
+              <Box
+                sx={{
+                  display: 'flex',
+                  gap: 1.5,
+                  flexWrap: 'wrap',
+                  justifyContent: { xs: 'center', md: 'flex-start' },
+                  mt: 2.5,
+                }}
+              >
+                <Button
+                  variant={isFavorite(movie.id) ? 'contained' : 'outlined'}
+                  startIcon={isFavorite(movie.id) ? <FavoriteIcon /> : <FavoriteBorderIcon />}
+                  onClick={() => toggleFavorite(movie)}
+                >
+                  {isFavorite(movie.id) ? 'In favorites' : 'Add to favorites'}
+                </Button>
+
+                {/* These two only show when the movie has a trailer */}
+                {trailer && (
+                  <>
+                    <Button variant="outlined" startIcon={<PlayArrowIcon />} onClick={scrollToTrailer}>
+                      Watch trailer
+                    </Button>
+                    <Button
+                      variant="text"
+                      endIcon={<OpenInNewIcon />}
+                      component="a"
+                      href={`https://www.youtube.com/watch?v=${trailer.key}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      YouTube
+                    </Button>
+                  </>
+                )}
+              </Box>
             </Box>
           </Box>
 
@@ -199,7 +254,8 @@ function MovieDetails() {
           </Box>
 
           {/* Trailer (the videos came with the movie because of append_to_response) */}
-          <Box sx={{ mt: 5 }}>
+          {/* scrollMarginTop leaves room for the sticky navbar when we scroll here */}
+          <Box id="trailer" sx={{ mt: 5, scrollMarginTop: '90px' }}>
             <SectionTitle>Trailer</SectionTitle>
             <TrailerEmbed videos={movie.videos.results} />
           </Box>
