@@ -136,59 +136,62 @@ function Home() {
           <FilterBar filters={filters} genres={genres} onChange={setFilters} />
         </Box>
 
-        {/* Bottom row: how many movies and a Clear button on the left, the Load More switch on the right */}
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            flexWrap: 'wrap',
-            gap: 1,
-            mt: 1.5,
-          }}
-        >
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minHeight: 36 }}>
-            {!loading && !error && (
-              <Typography variant="body2" color="text.secondary">
-                {visibleMovies.length} {visibleMovies.length === 1 ? 'movie' : 'movies'}
-              </Typography>
-            )}
-            {hasFilters && (
-              <Button
-                size="small"
-                startIcon={<FilterAltOffIcon />}
-                onClick={() => setFilters({ genre: '', year: '', rating: '' })}
-              >
-                Clear filters
-              </Button>
-            )}
-          </Box>
-
-          {/* Sort dropdown */}
-          <TextField
-            select
-            size="small"
-            label="Sort by"
-            value={sortBy}
-            onChange={(event) => setSortBy(event.target.value)}
-            slotProps={{ select: { MenuProps: smoothMenuProps } }}
-            sx={{
-              minWidth: 200,
-              '& .MuiOutlinedInput-root': { borderRadius: '12px', bgcolor: 'background.default' },
-            }}
-          >
-            {SORT_OPTIONS.map((option) => (
-              <MenuItem key={option.value} value={option.value}>
-                {option.label}
-              </MenuItem>
-            ))}
-          </TextField>
+        {/* Bottom row: how many movies, and a Clear button when a filter is on */}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minHeight: 36, mt: 1.5 }}>
+          {!loading && !error && (
+            <Typography variant="body2" color="text.secondary">
+              {visibleMovies.length} {visibleMovies.length === 1 ? 'movie' : 'movies'}
+            </Typography>
+          )}
+          {hasFilters && (
+            <Button
+              size="small"
+              startIcon={<FilterAltOffIcon />}
+              onClick={() => setFilters({ genre: '', year: '', rating: '' })}
+            >
+              Clear filters
+            </Button>
+          )}
         </Box>
       </Paper>
 
-      <SectionTitle component="h1">
-        {searchText === '' ? 'Trending this week' : `Results for "${searchText}"`}
-      </SectionTitle>
+      {/* Results heading: the title on the left and the sort dropdown on the right.
+          On a phone the dropdown goes under the title and fills the width. */}
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: { xs: 'column', sm: 'row' },
+          alignItems: { xs: 'stretch', sm: 'center' },
+          justifyContent: 'space-between',
+          gap: 2,
+          mb: 2,
+        }}
+      >
+        <SectionTitle component="h1" mb={0}>
+          {searchText === '' ? 'Trending this week' : `Results for "${searchText}"`}
+        </SectionTitle>
+
+        {/* Sort dropdown */}
+        <TextField
+          select
+          size="small"
+          label="Sort by"
+          value={sortBy}
+          onChange={(event) => setSortBy(event.target.value)}
+          slotProps={{ select: { MenuProps: smoothMenuProps } }}
+          sx={{
+            width: { xs: '100%', sm: 220 },
+            flexShrink: 0,
+            '& .MuiOutlinedInput-root': { borderRadius: '12px', bgcolor: 'background.paper' },
+          }}
+        >
+          {SORT_OPTIONS.map((option) => (
+            <MenuItem key={option.value} value={option.value}>
+              {option.label}
+            </MenuItem>
+          ))}
+        </TextField>
+      </Box>
 
       {/* The very first time there is nothing to show, so we show grey placeholder cards */}
       {loading && movies.length === 0 && <MovieGrid loading />}
