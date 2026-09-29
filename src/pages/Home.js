@@ -5,31 +5,55 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
 import MovieGrid from '../components/MovieGrid';
 import SearchBar from '../components/SearchBar';
-import { getTrending } from '../services/movies';
+import useDebounce from '../hooks/useDebounce';
+import { getTrending, searchMovies } from '../services/movies';
 
-// Home page: shows the trending movies
+// Home page: shows trending movies, or search results when the user types
 function Home() {
   const [movies, setMovies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  // The text in the search bar (searching itself comes in the next part)
   const [query, setQuery] = useState('');
 
-  // Load the trending movies one time when the page opens
+  // Wait until the user stops typing before we search
+  const debouncedQuery = useDebounce(query, 500);
+  const searchText = debouncedQuery.trim();
+
+  // Runs on first load and every time the search text changes
   useEffect(() => {
-    getTrending()
+    // If the user types again before this finishes, we ignore the old answer
+    let ignore = false;
+
+    setLoading(true);
+    setError('');
+
+    // No text means trending, some text means search
+    const request = searchText === '' ? getTrending() : searchMovies(searchText);
+
+    request
       .then((results) => {
-        setMovies(results);
+        if (!ignore) {
+          setMovies(results);
+        }
       })
       .catch(() => {
         // Simple message for now, better error handling comes later
-        setError('Could not load movies.');
+        if (!ignore) {
+          setError('Could not load movies.');
+        }
       })
       .finally(() => {
         // Loading is over, whether it worked or not
-        setLoading(false);
+        if (!ignore) {
+          setLoading(false);
+        }
       });
-  }, []);
+
+    // Cleanup: runs before the next search starts
+    return () => {
+      ignore = true;
+    };
+  }, [searchText]);
 
   return (
     <Container sx={{ py: 3 }}>
@@ -38,7 +62,7 @@ function Home() {
       </Box>
 
       <Typography variant="h5" component="h1" sx={{ mb: 2 }}>
-        Trending this week
+        {searchText === '' ? 'Trending this week' : `Results for "${searchText}"`}
       </Typography>
 
       {loading && (
