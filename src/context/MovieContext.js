@@ -38,12 +38,6 @@ export function MovieProvider({ children }) {
   // How the movies are sorted: '' (the order TMDb sent), 'rating', 'year-new', 'year-old' or 'title'
   const [sortBy, setSortBy] = useState('');
 
-  // How more movies are loaded: 'button' (Load More button) or 'scroll' (infinite scroll).
-  // The button is the default. The choice is saved in localStorage.
-  // The key ends with V2 on purpose: browsers that saved 'scroll' under the old key
-  // ('loadMode') now start with the button too.
-  const [loadMode, setLoadMode] = useLocalStorage('loadModeV2', 'button');
-
   // Remembers the latest search text, so old answers can be ignored
   const latestSearch = useRef('');
 
@@ -175,8 +169,6 @@ export function MovieProvider({ children }) {
     setFilters,
     sortBy,
     setSortBy,
-    loadMode,
-    setLoadMode,
     loadMore,
     loadingMore,
     moreError,

@@ -1,13 +1,10 @@
-import { useEffect, useRef } from 'react';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import Paper from '@mui/material/Paper';
 import Skeleton from '@mui/material/Skeleton';
-import Switch from '@mui/material/Switch';
 import TextField from '@mui/material/TextField';
 import MenuItem from '@mui/material/MenuItem';
-import FormControlLabel from '@mui/material/FormControlLabel';
 import CircularProgress from '@mui/material/CircularProgress';
 import LinearProgress from '@mui/material/LinearProgress';
 import FilterAltOffIcon from '@mui/icons-material/FilterAltOff';
@@ -47,48 +44,12 @@ function Home() {
     setFilters,
     sortBy,
     setSortBy,
-    loadMode,
-    setLoadMode,
     loadMore,
     loadingMore,
     moreError,
     clearMoreError,
     hasMore,
   } = useMovies();
-
-  // The invisible box at the bottom of the grid. When it comes into view, we load more.
-  const bottomRef = useRef(null);
-
-  // Infinite scroll: watch the bottom box and load the next page when it is visible
-  useEffect(() => {
-    // In Load More button mode we do not watch the scroll
-    if (loadMode !== 'scroll') {
-      return;
-    }
-
-    const target = bottomRef.current;
-    if (!target) {
-      return;
-    }
-
-    // The 200px margin starts loading a little before the user reaches the bottom
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          loadMore();
-        }
-      },
-      { rootMargin: '200px' }
-    );
-    observer.observe(target);
-
-    // Cleanup: stop watching before the next run
-    return () => {
-      observer.disconnect();
-    };
-    // filters is in the list so we check again after a filter changes
-    // (if few movies match, the bottom box stays visible and more pages load)
-  }, [loadMode, loadMore, movies, filters]);
 
   // Only the movies that match the chosen filters
   const filteredMovies = movies.filter((movie) => {
@@ -205,40 +166,25 @@ function Home() {
             )}
           </Box>
 
-          <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
-            {/* Sort dropdown */}
-            <TextField
-              select
-              size="small"
-              label="Sort by"
-              value={sortBy}
-              onChange={(event) => setSortBy(event.target.value)}
-              slotProps={{ select: { MenuProps: smoothMenuProps } }}
-              sx={{
-                minWidth: 200,
-                '& .MuiOutlinedInput-root': { borderRadius: '12px', bgcolor: 'background.default' },
-              }}
-            >
-              {SORT_OPTIONS.map((option) => (
-                <MenuItem key={option.value} value={option.value}>
-                  {option.label}
-                </MenuItem>
-              ))}
-            </TextField>
-
-            {/* Switch between infinite scroll and the Load More button */}
-            <FormControlLabel
-              control={
-                <Switch
-                  size="small"
-                  checked={loadMode === 'button'}
-                  onChange={(event) => setLoadMode(event.target.checked ? 'button' : 'scroll')}
-                />
-              }
-              label={<Typography variant="body2">Use Load More button</Typography>}
-              sx={{ mr: 0 }}
-            />
-          </Box>
+          {/* Sort dropdown */}
+          <TextField
+            select
+            size="small"
+            label="Sort by"
+            value={sortBy}
+            onChange={(event) => setSortBy(event.target.value)}
+            slotProps={{ select: { MenuProps: smoothMenuProps } }}
+            sx={{
+              minWidth: 200,
+              '& .MuiOutlinedInput-root': { borderRadius: '12px', bgcolor: 'background.default' },
+            }}
+          >
+            {SORT_OPTIONS.map((option) => (
+              <MenuItem key={option.value} value={option.value}>
+                {option.label}
+              </MenuItem>
+            ))}
+          </TextField>
         </Box>
       </Paper>
 
@@ -279,12 +225,9 @@ function Home() {
             </Typography>
           )}
 
-          {/* Scroll mode: this empty box is what the scroll watcher looks at */}
-          {loadMode === 'scroll' && <Box ref={bottomRef} sx={{ height: 1 }} />}
-
-          {/* Button mode: a button to load the next page. It stays on screen while loading,
-              is disabled, and shows its own spinner, so the user always sees something is happening. */}
-          {loadMode === 'button' && hasMore && !moreError && (
+          {/* The button that loads the next page. It stays on screen while loading, is disabled,
+              and shows its own spinner, so the user always sees something is happening. */}
+          {hasMore && !moreError && (
             <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
               <Button
                 variant="outlined"
@@ -300,14 +243,7 @@ function Home() {
             </Box>
           )}
 
-          {/* Scroll mode has no button, so it shows a spinner at the bottom while it loads */}
-          {loadMode === 'scroll' && loadingMore && (
-            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-              <CircularProgress />
-            </Box>
-          )}
-
-          {/* Retry clears the error, which lets the scroll watcher try again */}
+          {/* If loading more failed, show the error. Retry clears it, so the Load More button comes back. */}
           {moreError && <ErrorMessage message={moreError} onRetry={clearMoreError} />}
         </Box>
       )}
