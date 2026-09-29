@@ -20,49 +20,35 @@ import AuthLayout from '../components/AuthLayout';
 import PasswordStrength from '../components/PasswordStrength';
 import { validateSignUp } from '../services/validation';
 
-// The fields in the order they appear on the page (used to find the first field with an error)
 const FIELD_ORDER = ['firstName', 'username', 'email', 'password', 'confirm'];
 
-// Sign up form: first name, username, email, password and confirm password
 function SignUp() {
   const { user, register } = useAppContext();
 
-  // What the user typed
   const [values, setValues] = useState({ firstName: '', username: '', email: '', password: '', confirm: '' });
-  // Fields the user has already been in. Errors only show for these, so the form is not red from the start.
   const [touched, setTouched] = useState({});
-  // Errors that came from the account service, for example "this email is already used"
   const [serverErrors, setServerErrors] = useState({});
-  // A message for problems that belong to no field, shown at the top of the form
   const [formError, setFormError] = useState('');
-  // true while the account is being created
   const [submitting, setSubmitting] = useState(false);
-  // Show the passwords as text (true) or as dots (false)
   const [showPassword, setShowPassword] = useState(false);
 
-  // The rules for every field, checked again on every keystroke
   const clientErrors = validateSignUp(values);
 
-  // The error to show under a field ('' means no error)
   const errorFor = (field) => {
     if (serverErrors[field]) return serverErrors[field];
     return touched[field] ? clientErrors[field] || '' : '';
   };
 
-  // Called when the user types in a field
   const handleChange = (field) => (event) => {
     setValues({ ...values, [field]: event.target.value });
-    // The old error from the server is out of date now
     setServerErrors({ ...serverErrors, [field]: '' });
     setFormError('');
   };
 
-  // Called when the user leaves a field
   const handleBlur = (field) => () => {
     setTouched({ ...touched, [field]: true });
   };
 
-  // Put the cursor in the first field that has an error
   const focusFirstError = (errors) => {
     const first = FIELD_ORDER.find((field) => errors[field]);
     if (first) {
@@ -74,12 +60,10 @@ function SignUp() {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    // Ignore a second click while the first one is still being handled
     if (submitting) {
       return;
     }
 
-    // Show the errors of every field now
     setTouched({ firstName: true, username: true, email: true, password: true, confirm: true });
     setFormError('');
 
@@ -91,7 +75,6 @@ function SignUp() {
     setSubmitting(true);
     try {
       const result = await register(values);
-      // If it worked, the new user is logged in and the redirect below sends them to the home page
       if (!result.ok) {
         setServerErrors(result.errors || {});
         setFormError(result.error || '');
@@ -104,12 +87,10 @@ function SignUp() {
     }
   };
 
-  // Already logged in (or just signed up): go to the home page
   if (user) {
     return <Navigate to="/" replace />;
   }
 
-  // The same settings for every text field, to keep the code below short
   const fieldProps = (field, label, icon, extra = {}) => ({
     id: `signup-${field}`,
     label,
@@ -119,6 +100,7 @@ function SignUp() {
     onChange: handleChange(field),
     onBlur: handleBlur(field),
     error: errorFor(field) !== '',
+    // a space keeps the field height the same when an error shows up
     helperText: errorFor(field) || extra.hint || ' ',
     disabled: submitting,
     autoComplete: extra.autoComplete,
@@ -132,7 +114,6 @@ function SignUp() {
     },
   });
 
-  // The eye button that shows or hides the passwords
   const eyeButton = (
     <InputAdornment position="end">
       <IconButton
@@ -154,7 +135,6 @@ function SignUp() {
           </Alert>
         )}
 
-        {/* First name and username side by side on bigger screens */}
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, columnGap: 2 }}>
           <TextField
             {...fieldProps('firstName', 'First name', <BadgeOutlinedIcon />, {
@@ -188,7 +168,6 @@ function SignUp() {
             hint: 'At least 8 characters',
           })}
         />
-        {/* The strength bar and the rules show up when the user starts typing a password */}
         {values.password !== '' && <PasswordStrength password={values.password} />}
 
         <TextField
@@ -199,7 +178,6 @@ function SignUp() {
           })}
         />
 
-        {/* While the account is created the button is disabled and shows a spinner */}
         <Button
           type="submit"
           variant="contained"

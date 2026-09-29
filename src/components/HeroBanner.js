@@ -13,41 +13,32 @@ import PauseIcon from '@mui/icons-material/Pause';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import { BACKDROP_URL } from '../services/tmdb';
 
-// How long each slide stays, in milliseconds
 const SLIDE_TIME = 6000;
 
-// Animation for the progress bar on the active dot: it fills from 0% to 100% width
 const fillProgress = keyframes`
   from { width: 0%; }
   to { width: 100%; }
 `;
 
-// One slide: a big picture with the movie info on top
-// rank = 1 for the first slide, 2 for the second, ...
-// active = true for the slide the user can see right now
 function Slide({ movie, rank, active }) {
   const year = movie.release_date ? movie.release_date.slice(0, 4) : '';
   const rating = movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A';
 
   return (
     <Box
-      // Slides that are not visible are hidden from screen readers
       aria-hidden={!active}
       sx={{
         position: 'relative',
-        // Every slide is as wide as the banner, so they sit side by side in a row
         flex: '0 0 100%',
         height: '100%',
         backgroundImage: `url(${BACKDROP_URL + movie.backdrop_path})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
-        // The text is always white because it sits on top of a picture
         color: 'white',
         display: 'flex',
         alignItems: 'flex-end',
       }}
     >
-      {/* Dark gradient so the white text is easy to read on any picture */}
       <Box
         sx={{
           position: 'absolute',
@@ -57,8 +48,6 @@ function Slide({ movie, rank, active }) {
         }}
       />
 
-      {/* Text and button, on top of the gradient */}
-      {/* On bigger screens the text starts further right, so the left arrow never covers it */}
       <Box
         sx={{
           position: 'relative',
@@ -83,7 +72,6 @@ function Slide({ movie, rank, active }) {
           {movie.title}
         </Typography>
 
-        {/* Year and rating */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1.5 }}>
           {year && <Typography>{year}</Typography>}
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -92,7 +80,6 @@ function Slide({ movie, rank, active }) {
           </Box>
         </Box>
 
-        {/* Overview, cut after 2 lines on phones and 3 lines on bigger screens */}
         <Typography
           sx={{
             mb: 2.5,
@@ -112,7 +99,6 @@ function Slide({ movie, rank, active }) {
           component={Link}
           to={`/movie/${movie.id}`}
           startIcon={<InfoOutlinedIcon />}
-          // Keyboard users can only reach the button of the visible slide
           tabIndex={active ? 0 : -1}
         >
           View details
@@ -122,7 +108,6 @@ function Slide({ movie, rank, active }) {
   );
 }
 
-// A round arrow button on the left or right side of the banner
 function ArrowButton({ side, label, onClick, children }) {
   return (
     <IconButton
@@ -137,7 +122,6 @@ function ArrowButton({ side, label, onClick, children }) {
         color: 'white',
         bgcolor: 'rgba(0, 0, 0, 0.45)',
         '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.7)' },
-        // Phones use swipe instead, so the arrows only show on bigger screens
         display: { xs: 'none', md: 'inline-flex' },
       }}
     >
@@ -146,31 +130,21 @@ function ArrowButton({ side, label, onClick, children }) {
   );
 }
 
-// Banner that slides through several movies by itself.
-// movies = a list of movies that all have a backdrop_path
 function HeroBanner({ movies }) {
   const [index, setIndex] = useState(0);
-  // true while a real mouse is over the banner
   const [hovering, setHovering] = useState(false);
-  // true while a keyboard user has focus on a control inside the banner
   const [keyboardFocus, setKeyboardFocus] = useState(false);
-  // true when the user pressed the pause button
   const [userPaused, setUserPaused] = useState(false);
-  // Where the finger touched the screen (for swiping)
   const touchStartX = useRef(null);
 
   const count = movies.length;
-  // Stay inside the list, even if the list gets shorter
   const current = Math.min(index, count - 1);
 
-  // The banner slides by itself unless it is paused in some way
   const isPlaying = count > 1 && !hovering && !keyboardFocus && !userPaused;
 
   const goNext = () => setIndex((current + 1) % count);
   const goPrevious = () => setIndex((current - 1 + count) % count);
 
-  // Auto sliding: wait a few seconds, then go to the next slide.
-  // The timer starts again every time the slide changes, also when the user changes it.
   useEffect(() => {
     if (!isPlaying) {
       return;
@@ -182,7 +156,6 @@ function HeroBanner({ movies }) {
     return () => clearTimeout(timer);
   }, [current, isPlaying, count]);
 
-  // Swipe: remember where the finger started, and compare when it lifts
   const handleTouchStart = (event) => {
     touchStartX.current = event.touches[0].clientX;
   };
@@ -193,7 +166,7 @@ function HeroBanner({ movies }) {
     const distance = event.changedTouches[0].clientX - touchStartX.current;
     touchStartX.current = null;
 
-    // A swipe of more than 50px changes the slide
+    // a swipe of more than 50px changes the slide
     if (distance > 50) {
       goPrevious();
     } else if (distance < -50) {
@@ -206,10 +179,10 @@ function HeroBanner({ movies }) {
       role="region"
       aria-roledescription="carousel"
       aria-label="Trending movies"
-      // Pause only for a real mouse. Touch screens fake a mouse enter that never ends.
+      // pause only for a real mouse (a tap fakes a mouse enter that never ends) and only for
+      // keyboard focus (clicking a dot or an arrow must not stop the slideshow)
       onPointerEnter={(event) => setHovering(event.pointerType === 'mouse')}
       onPointerLeave={() => setHovering(false)}
-      // Pause only for keyboard focus. Clicking a dot or an arrow must not stop the sliding.
       onFocus={(event) => setKeyboardFocus(event.target.matches(':focus-visible'))}
       onBlur={() => setKeyboardFocus(false)}
       onTouchStart={handleTouchStart}
@@ -221,7 +194,6 @@ function HeroBanner({ movies }) {
         overflow: 'hidden',
       }}
     >
-      {/* The row of slides. Moving it to the left shows the next slide. */}
       <Box
         sx={{
           display: 'flex',
@@ -235,7 +207,6 @@ function HeroBanner({ movies }) {
         ))}
       </Box>
 
-      {/* Arrows, pause button and dots only make sense with more than one slide */}
       {count > 1 && (
         <>
           <ArrowButton side="left" label="previous movie" onClick={goPrevious}>
@@ -245,7 +216,6 @@ function HeroBanner({ movies }) {
             <ChevronRightIcon />
           </ArrowButton>
 
-          {/* Bottom right: pause button and one dot for each slide */}
           <Box
             sx={{
               position: 'absolute',
@@ -278,7 +248,6 @@ function HeroBanner({ movies }) {
                   onClick={() => setIndex(position)}
                   sx={{
                     position: 'relative',
-                    // The dot of the visible slide is a longer bar that shows the progress
                     width: isCurrent ? 34 : 8,
                     height: 8,
                     p: 0,
@@ -291,15 +260,13 @@ function HeroBanner({ movies }) {
                   }}
                 >
                   {isCurrent && (
-                    // The red part grows from 0 to full while we wait for the next slide.
-                    // A new key restarts it when the slide changes or the play state changes.
+                    // a new key restarts the fill when the slide or the play state changes
                     <Box
                       key={`${current}-${isPlaying}`}
                       sx={{
                         height: '100%',
                         bgcolor: 'primary.main',
                         borderRadius: 999,
-                        // When paused the bar stays full
                         width: isPlaying ? undefined : '100%',
                         animation: isPlaying ? `${fillProgress} ${SLIDE_TIME}ms linear forwards` : 'none',
                       }}

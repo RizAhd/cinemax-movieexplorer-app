@@ -2,25 +2,18 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import VideocamOffIcon from '@mui/icons-material/VideocamOff';
 
-// Finds the best video to show from the list of TMDb videos.
-// Returns the video, or undefined if there is none.
 export function findTrailer(videos) {
-  // Only YouTube videos can be embedded
   const youtubeVideos = videos.filter((video) => video.site === 'YouTube');
 
-  // Prefer a real trailer, and use a teaser if there is no trailer
   return (
     youtubeVideos.find((video) => video.type === 'Trailer') ||
     youtubeVideos.find((video) => video.type === 'Teaser')
   );
 }
 
-// Shows the YouTube trailer of a movie.
-// videos = the list of videos from TMDb (each has site, type and key)
 function TrailerEmbed({ videos }) {
   const trailer = findTrailer(videos);
 
-  // No trailer: show a dashed box with an icon
   if (!trailer) {
     return (
       <Box
@@ -40,7 +33,6 @@ function TrailerEmbed({ videos }) {
   }
 
   return (
-    // The frame: rounded corners and a shadow. It keeps the video in a 16:9 shape at any width.
     <Box
       sx={{
         width: '100%',

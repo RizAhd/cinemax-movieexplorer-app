@@ -7,8 +7,7 @@ import ErrorOutlinedIcon from '@mui/icons-material/ErrorOutlined';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import HomeIcon from '@mui/icons-material/Home';
 
-// The page the user sees after a crash. It uses normal links and window.location,
-// so it works even if the router itself is the thing that broke.
+// uses window.location instead of the router, so it still works if the router is what crashed
 function CrashPage({ error }) {
   return (
     <Container sx={{ py: { xs: 8, md: 12 }, textAlign: 'center' }}>
@@ -41,7 +40,6 @@ function CrashPage({ error }) {
         </Button>
       </Box>
 
-      {/* The technical message is only shown while developing, never to real visitors */}
       {process.env.NODE_ENV !== 'production' && error && (
         <Typography
           component="pre"
@@ -56,21 +54,17 @@ function CrashPage({ error }) {
   );
 }
 
-// Catches errors that happen while React draws the page (in any component below it) and shows
-// CrashPage instead of a blank white screen. React only allows this in a class component.
-// It does not catch errors in event handlers or in async code, those are handled where they happen.
+// React only catches render errors in a class component
 class ErrorBoundary extends Component {
   constructor(props) {
     super(props);
     this.state = { error: null };
   }
 
-  // React calls this when a component below crashed. What we return becomes the new state.
   static getDerivedStateFromError(error) {
     return { error };
   }
 
-  // A good place to write the error somewhere. Here we just log it in the browser console.
   componentDidCatch(error, info) {
     console.error('The app crashed:', error, info && info.componentStack);
   }

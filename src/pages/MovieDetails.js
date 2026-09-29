@@ -48,7 +48,6 @@ function MovieDetailsPage() {
 
   return (
     <Container sx={{ py: 3 }}>
-      {/* ml -2.5 cancels the button's own padding so the text lines up with the page edge */}
       <Button component={Link} to="/" startIcon={<ArrowBackIcon />} sx={{ mb: 2, ml: -2.5 }}>
         Back
       </Button>

@@ -22,25 +22,18 @@ import Profile from './pages/Profile';
 import NotFound from './pages/NotFound';
 
 function App() {
-  // Get the current mode ('light' or 'dark') from the context
   const { mode, user } = useAppContext();
 
   return (
     <ThemeProvider theme={getTheme(mode)}>
-      {/* CssBaseline applies the theme background and text color to the page */}
       <CssBaseline />
 
-      {/* Tells the user when the internet drops and when it comes back */}
       <OfflineBanner />
 
-      {/* If a page crashes, the user sees a friendly page instead of a blank screen */}
       <ErrorBoundary>
         <BrowserRouter>
-          {/* Keeps the scroll position right when the user changes page or presses Back */}
           <ScrollManager />
 
-          {/* This box is at least as tall as the screen, so the footer stays at the bottom.
-              On phones a logged in user gets extra space at the bottom for the bottom bar. */}
           <Box
             sx={{
               minHeight: '100vh',
@@ -49,7 +42,6 @@ function App() {
               pb: user ? { xs: 8, sm: 0 } : 0,
             }}
           >
-            {/* "Skip to content" link. It is hidden until a keyboard user presses Tab. */}
             <Box
               component="a"
               href="#main-content"
@@ -71,18 +63,13 @@ function App() {
               Skip to content
             </Box>
 
-            {/* Navbar is inside BrowserRouter because its links need the router */}
             <Navbar />
 
-            {/* The page content grows to fill the space between the navbar and the footer */}
             <Box component="main" id="main-content" tabIndex={-1} sx={{ flex: 1, outline: 'none' }}>
-              {/* PageFade makes each page fade in when the user changes page */}
               <PageFade>
-                {/* Each Route shows one page for one url */}
                 <Routes>
                   <Route path="/login" element={<Login />} />
                   <Route path="/signup" element={<SignUp />} />
-                  {/* These pages need a logged in user */}
                   <Route
                     path="/"
                     element={
@@ -115,7 +102,6 @@ function App() {
                       </ProtectedRoute>
                     }
                   />
-                  {/* Any other url shows the 404 page */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </PageFade>
@@ -124,10 +110,8 @@ function App() {
             <Footer />
           </Box>
 
-          {/* Bottom bar for phones (it hides itself when nobody is logged in) */}
           <BottomNav />
 
-          {/* Round button that scrolls back to the top (it shows after scrolling down) */}
           <BackToTop />
         </BrowserRouter>
       </ErrorBoundary>

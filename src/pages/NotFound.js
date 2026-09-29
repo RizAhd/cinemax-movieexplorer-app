@@ -5,13 +5,11 @@ import Button from '@mui/material/Button';
 import MovieFilterIcon from '@mui/icons-material/MovieFilter';
 import HomeIcon from '@mui/icons-material/Home';
 
-// Shown when the url does not match any page, for example /abc
 function NotFound() {
   return (
     <Container sx={{ py: { xs: 8, md: 12 }, textAlign: 'center' }}>
       <MovieFilterIcon color="primary" sx={{ fontSize: 56 }} />
 
-      {/* Big 404 */}
       <Typography
         variant="h1"
         component="p"

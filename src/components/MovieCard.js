@@ -12,24 +12,17 @@ import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import { useAppContext } from '../context/AppContext';
 import { IMAGE_URL } from '../services/tmdb';
 
-// Shows one movie: poster, rating badge, title and year.
-// Clicking the card opens the movie details page.
 function MovieCard({ movie }) {
   const { isFavorite, toggleFavorite } = useAppContext();
   const favorite = isFavorite(movie.id);
 
-  // false until the poster picture has finished loading, then it fades in
   const [imageLoaded, setImageLoaded] = useState(false);
 
-  // release_date looks like "2024-05-17", so we take the first 4 letters
   const year = movie.release_date ? movie.release_date.slice(0, 4) : 'N/A';
 
-  // Show the rating with one decimal, for example 7.8
   const rating = movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A';
 
   return (
-    // No box or border around the card: the poster is the star.
-    // position relative lets us put the heart button on top of the poster.
     <Card
       sx={{
         position: 'relative',
@@ -38,13 +31,11 @@ function MovieCard({ movie }) {
         boxShadow: 'none',
         overflow: 'visible',
         transition: 'transform 0.25s',
-        // On hover: the card lifts, the poster zooms in a little and gets a shadow
         '&:hover': { transform: 'translateY(-4px)' },
         '&:hover img': { transform: 'scale(1.06)' },
         '&:hover .poster-frame': { boxShadow: 8 },
       }}
     >
-      {/* The heart is outside the link, so clicking it does not open the details page */}
       <IconButton
         onClick={() => toggleFavorite(movie)}
         aria-label={favorite ? 'remove from favorites' : 'add to favorites'}
@@ -63,14 +54,12 @@ function MovieCard({ movie }) {
       </IconButton>
 
       <CardActionArea component={Link} to={`/movie/${movie.id}`} sx={{ borderRadius: '16px' }}>
-        {/* Frame with rounded corners. overflow hidden keeps the zoomed poster inside it. */}
         <Box
           className="poster-frame"
           sx={{
             position: 'relative',
             borderRadius: '16px',
             overflow: 'hidden',
-            // Grey block that shows until the poster has loaded
             bgcolor: 'action.hover',
             transition: 'box-shadow 0.25s',
           }}
@@ -80,10 +69,8 @@ function MovieCard({ movie }) {
               component="img"
               image={IMAGE_URL + movie.poster_path}
               alt={movie.title}
-              // Only load the picture when the card is near the screen
               loading="lazy"
               onLoad={() => setImageLoaded(true)}
-              // If the picture fails, still show the card instead of leaving it invisible
               onError={() => setImageLoaded(true)}
               sx={{
                 aspectRatio: '2 / 3',
@@ -94,7 +81,6 @@ function MovieCard({ movie }) {
               }}
             />
           ) : (
-            // Some movies have no poster, so we show a plain box instead
             <Box
               sx={{
                 aspectRatio: '2 / 3',
@@ -108,7 +94,6 @@ function MovieCard({ movie }) {
             </Box>
           )}
 
-          {/* Rating badge in the top left corner of the poster */}
           <Box
             role="img"
             aria-label={`Rating ${rating} out of 10`}
@@ -133,9 +118,7 @@ function MovieCard({ movie }) {
           </Box>
         </Box>
 
-        {/* Title and year under the poster */}
         <Box sx={{ pt: 1.5, px: 0.5 }}>
-          {/* noWrap keeps long titles on one line with ... at the end */}
           <Typography variant="subtitle1" noWrap sx={{ fontWeight: 600 }} title={movie.title}>
             {movie.title}
           </Typography>

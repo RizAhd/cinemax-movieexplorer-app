@@ -14,31 +14,20 @@ import LightModeIcon from '@mui/icons-material/LightMode';
 import { useAppContext } from '../context/AppContext';
 import UserBadge from './UserBadge';
 
-// The height of every button and icon in the bar, so they all look the same size
 const ITEM_HEIGHT = 40;
 
-// Top bar shown on every page.
-// Left: the logo and the page links. Right: who is logged in, Sign out and the theme button.
-//   Phones:  logo ..................... avatar  theme     (the links are in the bottom bar)
-//   Tablets: logo  Home  Favorites .... avatar  sign-out icon  theme
-//   Desktop: logo  Home  Favorites .... avatar + "Hi, name"  Sign out  theme
 function Navbar() {
-  // Get the mode, the user and the functions from the context
   const { mode, toggleMode, user, logout } = useAppContext();
   const navigate = useNavigate();
-  // The current page url, used to highlight the active link
   const { pathname } = useLocation();
 
-  // Sign out and go back to the login page
   const handleSignOut = () => {
     logout();
     navigate('/login');
   };
 
-  // True when the user is on this page
   const isActive = (path) => pathname === path;
 
-  // A soft red background for the link of the current page
   const activeStyle = (path) => (theme) => ({
     minHeight: ITEM_HEIGHT,
     bgcolor: isActive(path) ? alpha(theme.palette.primary.main, 0.15) : 'transparent',
@@ -50,7 +39,6 @@ function Navbar() {
       elevation={0}
       color="inherit"
       sx={(theme) => ({
-        // See-through background with a blur, so the page shows a little behind the bar
         bgcolor: alpha(theme.palette.background.default, 0.8),
         backdropFilter: 'blur(12px)',
         borderBottom: `1px solid ${theme.palette.divider}`,
@@ -59,7 +47,6 @@ function Navbar() {
     >
       <Container>
         <Toolbar disableGutters>
-          {/* LEFT: logo and app name, they link to the home page */}
           <Box
             component={Link}
             to="/"
@@ -78,7 +65,7 @@ function Navbar() {
               sx={{
                 fontWeight: 800,
                 letterSpacing: 2,
-                // On very small phones (under 360px) only the logo icon stays, so everything fits
+                // on very small phones only the icon fits next to the buttons
                 '@media (max-width: 359px)': { display: 'none' },
               }}
             >
@@ -86,7 +73,6 @@ function Navbar() {
             </Typography>
           </Box>
 
-          {/* LEFT: page links, next to the logo. Hidden on phones (the bottom bar has the links there). */}
           {user && (
             <Box
               component="nav"
@@ -112,17 +98,13 @@ function Navbar() {
             </Box>
           )}
 
-          {/* An empty box that grows, so everything after it is pushed to the right edge */}
           <Box sx={{ flexGrow: 1 }} />
 
-          {/* RIGHT: who is logged in, Sign out and the theme button, all the same height and spacing */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.5, sm: 1 } }}>
             {user ? (
               <>
-                {/* Avatar with the first letter of the name (and "Hi, name" on desktop). Links to the profile. */}
                 <UserBadge user={user} />
 
-                {/* Desktop: a Sign out button with an icon and text */}
                 <Button
                   color="inherit"
                   variant="outlined"
@@ -137,7 +119,6 @@ function Navbar() {
                   Sign out
                 </Button>
 
-                {/* Tablet: only the Sign out icon, to save space. On phones the bottom bar has Sign out. */}
                 <IconButton
                   color="inherit"
                   onClick={handleSignOut}
@@ -149,7 +130,6 @@ function Navbar() {
               </>
             ) : (
               <>
-                {/* Smaller side padding on phones, so both buttons and the logo fit on one line */}
                 <Button
                   color={isActive('/login') ? 'primary' : 'inherit'}
                   component={Link}
@@ -169,7 +149,6 @@ function Navbar() {
               </>
             )}
 
-            {/* Theme toggle: moon in light mode, sun in dark mode */}
             <IconButton
               color="inherit"
               onClick={toggleMode}

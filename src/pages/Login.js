@@ -15,33 +15,24 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import AuthLayout from '../components/AuthLayout';
 
-// Login form: an email or a username, and a password
 function Login() {
-  // Keep what the user types in state
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
-  // Show the password as text (true) or as dots (false)
   const [showPassword, setShowPassword] = useState(false);
-  // Error messages to show under the fields
   const [identifierError, setIdentifierError] = useState('');
   const [passwordError, setPasswordError] = useState('');
-  // The message for a wrong login, shown at the top of the form
   const [formError, setFormError] = useState('');
-  // true while we check the login
   const [submitting, setSubmitting] = useState(false);
 
   const { user, login } = useAppContext();
 
   const handleSubmit = async (event) => {
-    // Stop the page from reloading when the form is sent
     event.preventDefault();
 
-    // Ignore a second click while the first one is still being checked
     if (submitting) {
       return;
     }
 
-    // Both fields must be filled in. We do not check password rules here, only when signing up.
     const newIdentifierError = identifier.trim() === '' ? 'Enter your email or username' : '';
     const newPasswordError = password === '' ? 'Enter your password' : '';
 
@@ -56,7 +47,6 @@ function Login() {
     setSubmitting(true);
     try {
       const result = await login(identifier, password);
-      // If it worked, the user is saved and the redirect below sends them to the home page
       if (!result.ok) {
         setFormError(result.error);
       }
@@ -67,7 +57,6 @@ function Login() {
     }
   };
 
-  // Already logged in (or just logged in): go to the home page
   if (user) {
     return <Navigate to="/" replace />;
   }
@@ -75,7 +64,6 @@ function Login() {
   return (
     <AuthLayout title="Welcome back" subtitle="Login to explore movies">
       <form onSubmit={handleSubmit} noValidate>
-        {/* A wrong email/username or password shows up here */}
         {formError && (
           <Alert severity="error" sx={{ mb: 1 }}>
             {formError}
@@ -124,7 +112,6 @@ function Login() {
                   <LockOutlinedIcon />
                 </InputAdornment>
               ),
-              // Eye button to show or hide the password
               endAdornment: (
                 <InputAdornment position="end">
                   <IconButton
@@ -140,7 +127,6 @@ function Login() {
           }}
         />
 
-        {/* While we check the login the button is disabled and shows a spinner */}
         <Button
           type="submit"
           variant="contained"

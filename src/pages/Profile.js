@@ -24,7 +24,6 @@ import { getInitial } from '../components/UserBadge';
 import { getAccount } from '../services/auth';
 import { validateFirstName, validateEmail, validatePassword, validateConfirm } from '../services/validation';
 
-// The settings every text field on this page shares, to keep the code below short
 function fieldProps({ id, label, icon, value, onChange, onBlur, error, hint, type, autoComplete, disabled, endAdornment, maxLength }) {
   return {
     id,
@@ -38,7 +37,6 @@ function fieldProps({ id, label, icon, value, onChange, onBlur, error, hint, typ
     fullWidth: true,
     margin: 'normal',
     error: Boolean(error),
-    // A space keeps the height the same, so the form does not jump when an error appears
     helperText: error || hint || ' ',
     slotProps: {
       input: {
@@ -50,13 +48,11 @@ function fieldProps({ id, label, icon, value, onChange, onBlur, error, hint, typ
   };
 }
 
-// Put the cursor in a field, for example the first one with an error
 function focusField(id) {
   const input = document.getElementById(id);
   if (input) input.focus();
 }
 
-// The eye button that shows or hides passwords
 function EyeButton({ visible, onToggle, label }) {
   return (
     <InputAdornment position="end">
@@ -67,8 +63,6 @@ function EyeButton({ visible, onToggle, label }) {
   );
 }
 
-// ---------------------------------------------------------------------------------------------
-// The first card: first name, username (locked) and email
 function DetailsCard({ account }) {
   const { updateProfile } = useAppContext();
 
@@ -80,12 +74,9 @@ function DetailsCard({ account }) {
   const [saving, setSaving] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  // Is the email different from the saved one? Then we also need the current password.
   const emailChanged = values.email.trim().toLowerCase() !== account.email.toLowerCase();
-  // Did anything change at all? The Save button stays off until something did.
   const changed = values.firstName.trim() !== account.firstName || emailChanged;
 
-  // The rules, checked again on every keystroke
   const clientErrors = {};
   const firstNameError = validateFirstName(values.firstName);
   const emailError = validateEmail(values.email);
@@ -95,7 +86,6 @@ function DetailsCard({ account }) {
     clientErrors.currentPassword = 'Enter your current password to change your email';
   }
 
-  // The error to show under a field ('' means none)
   const errorFor = (field) => serverErrors[field] || (touched[field] ? clientErrors[field] || '' : '');
 
   const handleChange = (field) => (event) => {
@@ -124,7 +114,6 @@ function DetailsCard({ account }) {
     try {
       const result = await updateProfile(values);
       if (result.ok) {
-        // The saved details are the new starting point, and the password box is emptied
         setValues({ ...values, currentPassword: '' });
         setTouched({});
         setServerErrors({});
@@ -175,7 +164,6 @@ function DetailsCard({ account }) {
           })}
         />
 
-        {/* The username is shown but locked: it can never be changed */}
         <TextField
           {...fieldProps({
             id: 'profile-username',
@@ -208,7 +196,6 @@ function DetailsCard({ account }) {
           })}
         />
 
-        {/* Only when the email is being changed: we need the password to be sure it is you */}
         {emailChanged && (
           <TextField
             {...fieldProps({
@@ -243,8 +230,6 @@ function DetailsCard({ account }) {
   );
 }
 
-// ---------------------------------------------------------------------------------------------
-// The second card: change the password
 function PasswordCard() {
   const { changePassword } = useAppContext();
 
@@ -297,7 +282,6 @@ function PasswordCard() {
     try {
       const result = await changePassword(values);
       if (result.ok) {
-        // Empty the boxes, so the passwords are not left on the screen
         setValues({ currentPassword: '', newPassword: '', confirm: '' });
         setTouched({});
         setServerErrors({});
@@ -370,7 +354,6 @@ function PasswordCard() {
             maxLength: 64,
           })}
         />
-        {/* The strength bar and the rules show up when the user starts typing */}
         {values.newPassword !== '' && <PasswordStrength password={values.newPassword} />}
 
         <TextField
@@ -403,16 +386,12 @@ function PasswordCard() {
   );
 }
 
-// ---------------------------------------------------------------------------------------------
-// The page. It shows the two cards, or a notice when the person has no saved account.
 function Profile() {
   const { user, logout } = useAppContext();
   const navigate = useNavigate();
 
-  // The saved account of the logged in person. Older demo logins have none.
   const account = getAccount(user.username);
 
-  // An older demo login has no account, so there is nothing to edit
   if (!account) {
     return (
       <Container maxWidth="sm" sx={{ py: 3 }}>
@@ -443,7 +422,6 @@ function Profile() {
     <Container maxWidth="md" sx={{ py: 3 }}>
       <SectionTitle component="h1">My profile</SectionTitle>
 
-      {/* Who is logged in */}
       <Paper
         variant="outlined"
         sx={{ p: { xs: 2.5, sm: 3 }, mb: 3, borderRadius: '20px', display: 'flex', alignItems: 'center', gap: 2 }}
@@ -473,7 +451,6 @@ function Profile() {
         </Box>
       </Paper>
 
-      {/* The two cards: side by side on a wide screen, one under the other on smaller ones */}
       <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: { xs: 'minmax(0, 1fr)', md: 'repeat(2, minmax(0, 1fr))' }, alignItems: 'start' }}>
         <DetailsCard account={account} />
         <PasswordCard />

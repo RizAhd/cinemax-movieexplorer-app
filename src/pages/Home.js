@@ -20,7 +20,6 @@ import SectionTitle from '../components/SectionTitle';
 import ErrorMessage from '../components/ErrorMessage';
 import { useMovies } from '../context/MovieContext';
 
-// The ways the user can sort the movies. The empty value keeps the order TMDb sent.
 const SORT_OPTIONS = [
   { value: '', label: 'Default' },
   { value: 'rating', label: 'Rating: high to low' },
@@ -29,8 +28,6 @@ const SORT_OPTIONS = [
   { value: 'title', label: 'Title: A to Z' },
 ];
 
-// Home page: shows trending movies, or search results when the user types.
-// The movie data comes from MovieContext. This page decides how to show it.
 function Home() {
   const {
     query,
@@ -54,10 +51,10 @@ function Home() {
     hasMore,
   } = useMovies();
 
-  // Search results scroll forever, trending keeps the Load More button
   const searching = searchText !== '';
   const bottomRef = useRef(null);
 
+  // infinite scroll is only for search results, trending uses the Load More button
   useEffect(() => {
     if (!searching || !bottomRef.current) {
       return;
@@ -72,31 +69,24 @@ function Home() {
     );
     observer.observe(bottomRef.current);
     return () => observer.disconnect();
-    // movies and filters are here so it checks again after a page or a filter change
   }, [searching, loadMore, movies, filters]);
 
-  // Browsing: TMDb already applied the filters. Search results are filtered here (TMDb search cannot do it).
+  // when browsing, TMDb already applied the filters. Search has no genre/rating filter, so do it here
   const filteredMovies = movies.filter((movie) => {
     if (!searching) {
       return true;
     }
     const movieGenres = movie.genre_ids || [];
-    // release_date looks like "1999-10-15", so the first 4 letters are the year
     const movieYear = movie.release_date ? Number(movie.release_date.slice(0, 4)) : null;
 
     const genreOk = filters.genre === '' || movieGenres.includes(filters.genre);
     const yearOk = filters.year === '' || movieYear === filters.year;
-    // vote_average is the rating from 0 to 10
     const ratingOk = filters.rating === '' || movie.vote_average >= filters.rating;
 
-    // A movie must pass every filter
     return genreOk && yearOk && ratingOk;
   });
 
-  // Put those movies in the order the user chose.
-  // The [...] makes a copy, because sort() would change the original list.
   const visibleMovies = [...filteredMovies].sort((a, b) => {
-    // Movies without a date go to the end
     const dateA = a.release_date || '';
     const dateB = b.release_date || '';
 
@@ -112,26 +102,21 @@ function Home() {
       return dateA.localeCompare(dateB);
     }
     if (sortBy === 'title') {
-      // A movie without a title counts as an empty title
       return (a.title || '').localeCompare(b.title || '');
     }
-    // Default: keep the order as it is
     return 0;
   });
 
-  // True when at least one filter is chosen
   const hasFilters = filters.genre !== '' || filters.year !== '' || filters.rating !== '';
 
   return (
     <Container sx={{ py: 3 }}>
-      {/* The banner is always at the top. It has its own movies, so a search does not hide it. */}
       {!heroLoading && heroMovies.length > 0 && (
         <Box sx={{ mb: 3 }}>
           <HeroBanner movies={heroMovies} />
         </Box>
       )}
 
-      {/* Placeholder with the banner's size, so the page does not jump when it loads */}
       {heroLoading && (
         <Skeleton
           variant="rounded"
@@ -139,16 +124,11 @@ function Home() {
         />
       )}
 
-      {/* One toolbar card for the search bar, the filters and the Load More switch */}
       <Paper variant="outlined" sx={{ p: 2, mb: 4, borderRadius: '20px' }}>
-        {/* Grid: on a phone the search bar has a row, then Genre, then Year and Rating side by side.
-            On a big screen everything is in one row and the search bar is twice as wide. */}
         <Box
           sx={{
             display: 'grid',
             gap: 2,
-            // minmax(0, ...) keeps the columns from growing when a field has long text
-            // Phone: 2 columns. Tablet: 3 columns. Desktop: search bar twice as wide + 3 dropdowns.
             gridTemplateColumns: {
               xs: 'repeat(2, minmax(0, 1fr))',
               sm: 'repeat(3, minmax(0, 1fr))',
@@ -162,7 +142,6 @@ function Home() {
           <FilterBar filters={filters} genres={genres} onChange={setFilters} />
         </Box>
 
-        {/* Bottom row: how many movies, and a Clear button when a filter is on */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minHeight: 36, mt: 1.5 }}>
           {!loading && !error && (
             <Typography variant="body2" color="text.secondary">
@@ -181,8 +160,6 @@ function Home() {
         </Box>
       </Paper>
 
-      {/* Results heading: the title on the left and the sort dropdown on the right.
-          On a phone the dropdown goes under the title and fills the width. */}
       <Box
         sx={{
           display: 'flex',
@@ -201,7 +178,6 @@ function Home() {
               : 'Trending this week'}
         </SectionTitle>
 
-        {/* Sort dropdown */}
         <TextField
           select
           size="small"
@@ -223,15 +199,12 @@ function Home() {
         </TextField>
       </Box>
 
-      {/* The very first time there is nothing to show, so we show grey placeholder cards */}
       {loading && movies.length === 0 && <MovieGrid loading />}
 
-      {/* Later loads keep the old movies on screen (dimmed) and show a thin progress bar */}
       {loading && movies.length > 0 && <LinearProgress sx={{ borderRadius: 999, mb: 2 }} />}
 
       {error && <ErrorMessage message={error} onRetry={retry} />}
 
-      {/* Search finished but nothing was found */}
       {!loading && !error && movies.length === 0 && (
         <Typography color="text.secondary" sx={{ mt: 4, textAlign: 'center' }}>
           {searching
@@ -241,7 +214,6 @@ function Home() {
       )}
 
       {!error && movies.length > 0 && (
-        // While a new search loads, the old movies fade and cannot be clicked
         <Box
           sx={{
             opacity: loading ? 0.45 : 1,
@@ -252,7 +224,6 @@ function Home() {
           {visibleMovies.length > 0 ? (
             <MovieGrid movies={visibleMovies} />
           ) : (
-            // Movies were loaded, but none match the filters
             <Typography color="text.secondary" sx={{ mt: 4, textAlign: 'center' }}>
               No movies match your filters.
             </Typography>

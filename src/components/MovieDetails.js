@@ -56,7 +56,6 @@ function MovieDetails({ movie }) {
         />
       </Box>
 
-      {/* the negative margin pulls the poster up over the backdrop */}
       <Box
         sx={{
           position: 'relative',
@@ -65,6 +64,7 @@ function MovieDetails({ movie }) {
           alignItems: { xs: 'center', md: 'flex-end' },
           gap: { xs: 2, md: 4 },
           px: { md: 4 },
+          // pulls the poster up so it overlaps the backdrop
           mt: { xs: -10, md: -16 },
           textAlign: { xs: 'center', md: 'left' },
         }}
@@ -181,7 +181,6 @@ function MovieDetails({ movie }) {
           <Typography sx={{ lineHeight: 1.8 }}>{movie.overview || 'No overview available.'}</Typography>
         </Box>
 
-        {/* scrollMarginTop leaves room for the sticky navbar when the page scrolls here */}
         <Box id="trailer" sx={{ scrollMarginTop: '90px' }}>
           <SectionTitle>Trailer</SectionTitle>
           <TrailerEmbed videos={movie.videos.results} />

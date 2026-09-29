@@ -4,10 +4,8 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
 import { passwordStrength, passwordChecks } from '../services/validation';
 
-// The color of the bar for each score (0 is nothing typed yet)
 const SCORE_COLORS = ['text.secondary', 'error', 'warning', 'info', 'success'];
 
-// A strength bar and a checklist of the password rules, that update while the user types
 function PasswordStrength({ password }) {
   const { score, label } = passwordStrength(password);
   const checks = passwordChecks(password);
@@ -15,7 +13,6 @@ function PasswordStrength({ password }) {
 
   return (
     <Box sx={{ mt: 0.5, mb: 1 }}>
-      {/* The bar: 4 small pieces, the first few get colored */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
         {[1, 2, 3, 4].map((piece) => (
           <Box
@@ -29,7 +26,6 @@ function PasswordStrength({ password }) {
             }}
           />
         ))}
-        {/* aria-live tells screen readers when the word changes */}
         <Typography
           variant="caption"
           aria-live="polite"
@@ -39,7 +35,6 @@ function PasswordStrength({ password }) {
         </Typography>
       </Box>
 
-      {/* The rules, each with a tick when the password follows it */}
       <Box
         component="ul"
         aria-label="Password rules"

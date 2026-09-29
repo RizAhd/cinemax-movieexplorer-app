@@ -4,20 +4,15 @@ import Avatar from '@mui/material/Avatar';
 import Typography from '@mui/material/Typography';
 import Tooltip from '@mui/material/Tooltip';
 
-// The first letter of a name in capitals, or "?" for an empty name.
-// Array.from keeps letters with accents, or emoji, in one piece.
+// Array.from keeps emoji and other characters that take two code units in one piece
 export function getInitial(name) {
   const first = Array.from(String(name || '').trim())[0];
   return first ? first.toUpperCase() : '?';
 }
 
-// A round avatar with the first letter of the user's name, and "Hi, Riflan" on bigger screens.
-// It is a link to the profile page.
-// user = { firstName, username, email }. Older logins have only a username, so we fall back to it.
 function UserBadge({ user }) {
   const name = (user.firstName || user.username || '').trim();
 
-  // What appears when the mouse rests on the badge, and what screen readers read
   const details = user.email ? `${name} (${user.email})` : name;
 
   return (
@@ -30,7 +25,6 @@ function UserBadge({ user }) {
           display: 'flex',
           alignItems: 'center',
           gap: 1,
-          // Same height as the other buttons in the top bar, and a little space on the right
           minHeight: 40,
           pr: { md: 1 },
           color: 'inherit',
@@ -53,7 +47,6 @@ function UserBadge({ user }) {
           {getInitial(name)}
         </Avatar>
 
-        {/* The greeting is hidden on phones and tablets to save space. noWrap cuts a long name with ... */}
         <Typography
           variant="body2"
           noWrap

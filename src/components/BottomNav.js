@@ -8,22 +8,17 @@ import PersonIcon from '@mui/icons-material/Person';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { useAppContext } from '../context/AppContext';
 
-// Bar at the bottom of the screen on phones, with the main links.
-// It is hidden on bigger screens, where the top navbar has the links.
 function BottomNav() {
   const { user, logout } = useAppContext();
   const { pathname } = useLocation();
   const navigate = useNavigate();
 
-  // Only logged in users see it
   if (!user) {
     return null;
   }
 
-  // Only Home, Favorites and Profile can be selected. On other pages nothing is selected.
   const value = ['/', '/favorites', '/profile'].includes(pathname) ? pathname : false;
 
-  // Sign out and go back to the login page
   const handleSignOut = () => {
     logout();
     navigate('/login');
@@ -41,11 +36,9 @@ function BottomNav() {
         left: 0,
         right: 0,
         zIndex: (theme) => theme.zIndex.appBar,
-        // Only on phones
         display: { xs: 'block', sm: 'none' },
         borderTop: 1,
         borderColor: 'divider',
-        // Keeps the bar above the home bar on phones that have one
         pb: 'env(safe-area-inset-bottom)',
       }}
     >

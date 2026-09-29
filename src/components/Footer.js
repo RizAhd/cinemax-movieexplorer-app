@@ -3,7 +3,6 @@ import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import MovieFilterIcon from '@mui/icons-material/MovieFilter';
 
-// Bottom of every page: logo, copyright and who made the app
 function Footer() {
   return (
     <Box
@@ -11,7 +10,6 @@ function Footer() {
       sx={{ mt: 6, py: 4, borderTop: 1, borderColor: 'divider', textAlign: 'center' }}
     >
       <Container>
-        {/* Logo and name */}
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, mb: 1.5 }}>
           <MovieFilterIcon color="primary" />
           <Typography sx={{ fontWeight: 800, letterSpacing: 2 }}>CINEMAX</Typography>

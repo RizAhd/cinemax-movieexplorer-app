@@ -1,8 +1,6 @@
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
 
-// Shows an error message with a Retry button.
-// message = the text to show, onRetry = what to do when Retry is clicked
 function ErrorMessage({ message, onRetry }) {
   return (
     <Alert

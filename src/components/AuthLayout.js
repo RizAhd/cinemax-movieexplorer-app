@@ -4,9 +4,6 @@ import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import MovieFilterIcon from '@mui/icons-material/MovieFilter';
 
-// The look shared by the Login and Sign up pages: a card with the logo and a title,
-// on a background with soft red and gold glows.
-// title and subtitle are the texts at the top, children is the form, maxWidth is how wide the card is.
 function AuthLayout({ title, subtitle, children, maxWidth = 420 }) {
   return (
     <Box
@@ -20,7 +17,6 @@ function AuthLayout({ title, subtitle, children, maxWidth = 420 }) {
         py: 4,
       }}
     >
-      {/* Soft red and gold glows behind the card. They fade out at the bottom, so there is no hard edge. */}
       <Box
         sx={(theme) => ({
           position: 'absolute',
@@ -42,7 +38,6 @@ function AuthLayout({ title, subtitle, children, maxWidth = 420 }) {
           borderRadius: '24px',
         }}
       >
-        {/* Logo and title */}
         <Box sx={{ textAlign: 'center', mb: 3 }}>
           <MovieFilterIcon color="primary" sx={{ fontSize: 56 }} />
           <Typography variant="h6" sx={{ fontWeight: 800, letterSpacing: 3 }}>
