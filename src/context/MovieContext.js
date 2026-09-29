@@ -13,7 +13,7 @@ export function MovieProvider({ children }) {
   const { user } = useAppContext();
 
   // The search text is saved in localStorage, so the last search is remembered
-  const [query, setQuery] = useLocalStorage('lastSearch', '');
+  const [query, setQuery] = useLocalStorage('lastSearch', '', (value) => typeof value === 'string');
 
   const [movies, setMovies] = useState([]);
   const [loading, setLoading] = useState(true);

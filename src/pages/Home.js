@@ -87,7 +87,8 @@ function Home() {
       return dateA.localeCompare(dateB);
     }
     if (sortBy === 'title') {
-      return a.title.localeCompare(b.title);
+      // A movie without a title counts as an empty title
+      return (a.title || '').localeCompare(b.title || '');
     }
     // Default: keep the order as it is
     return 0;

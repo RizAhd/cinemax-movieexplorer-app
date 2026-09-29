@@ -9,6 +9,9 @@ export const BACKDROP_URL = 'https://image.tmdb.org/t/p/w1280'; // wide backgrou
 // The API key comes from the .env file (REACT_APP_TMDB_KEY).
 const tmdb = axios.create({
   baseURL: 'https://api.themoviedb.org/3',
+  // Give up after 10 seconds, so a slow or stuck connection ends with an error message
+  // instead of a spinner that never stops
+  timeout: 10000,
   params: {
     api_key: process.env.REACT_APP_TMDB_KEY,
     language: 'en-US',

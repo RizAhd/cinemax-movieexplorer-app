@@ -30,4 +30,23 @@ describe('getErrorMessage', () => {
   test('gives a general message for any other status', () => {
     expect(getErrorMessage(errorWithStatus(400))).toBe('Something went wrong. Please try again.');
   });
+
+  test('says the server took too long when the request times out', () => {
+    expect(getErrorMessage({ code: 'ECONNABORTED' })).toMatch(/took too long/i);
+    expect(getErrorMessage({ code: 'ETIMEDOUT' })).toMatch(/took too long/i);
+  });
+
+  test('says the internet is down for a network error code', () => {
+    expect(getErrorMessage({ code: 'ERR_NETWORK' })).toMatch(/internet connection/i);
+  });
+
+  test('does not blame the internet for a bug in our own code', () => {
+    // A normal JavaScript error has no response and no request
+    expect(getErrorMessage(new TypeError('x is undefined'))).toBe('Something went wrong. Please try again.');
+  });
+
+  test('gives a general message when there is no error object at all', () => {
+    expect(getErrorMessage(undefined)).toBe('Something went wrong. Please try again.');
+    expect(getErrorMessage(null)).toBe('Something went wrong. Please try again.');
+  });
 });

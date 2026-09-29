@@ -2,14 +2,27 @@ import { useState, useEffect } from 'react';
 
 // Works like useState, but the value is also saved in localStorage.
 // key = the name used in localStorage, initialValue = used if nothing is saved yet
-function useLocalStorage(key, initialValue) {
+// isValid (optional) = a function that checks a saved value. If it says false,
+// the saved value is thrown away and initialValue is used. This protects the app from
+// broken or old values, for example when someone edits localStorage by hand.
+function useLocalStorage(key, initialValue, isValid) {
   const [value, setValue] = useState(() => {
     try {
       const saved = localStorage.getItem(key);
-      // If something was saved, turn the text back into a value
-      return saved !== null ? JSON.parse(saved) : initialValue;
+      if (saved === null) {
+        return initialValue;
+      }
+
+      // Turn the text back into a value
+      const parsed = JSON.parse(saved);
+
+      // If the value is not what we expect, do not use it
+      if (isValid && !isValid(parsed)) {
+        return initialValue;
+      }
+      return parsed;
     } catch (error) {
-      // If reading fails, just use the starting value
+      // If reading or parsing fails, just use the starting value
       return initialValue;
     }
   });

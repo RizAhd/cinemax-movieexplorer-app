@@ -1,13 +1,22 @@
 import { createContext, useContext } from 'react';
 import useLocalStorage from '../hooks/useLocalStorage';
 
+// Checks for the values we read from localStorage. A saved value that fails its check is ignored.
+const isValidMode = (value) => value === 'light' || value === 'dark';
+const isValidUser = (value) =>
+  value === null ||
+  (typeof value === 'object' && typeof value.username === 'string' && value.username.trim() !== '');
+const isValidFavorites = (value) =>
+  Array.isArray(value) &&
+  value.every((movie) => movie && typeof movie === 'object' && typeof movie.id === 'number');
+
 // This is the shared box that any component can read from
 const AppContext = createContext();
 
 // Wrap the app with this so every component can use the shared data
 export function AppProvider({ children }) {
   // Theme mode is 'light' or 'dark', and it is saved in localStorage
-  const [mode, setMode] = useLocalStorage('themeMode', 'light');
+  const [mode, setMode] = useLocalStorage('themeMode', 'light', isValidMode);
 
   // Switch between light and dark
   const toggleMode = () => {
@@ -15,7 +24,7 @@ export function AppProvider({ children }) {
   };
 
   // The logged in user (null means nobody is logged in), saved in localStorage
-  const [user, setUser] = useLocalStorage('user', null);
+  const [user, setUser] = useLocalStorage('user', null, isValidUser);
 
   // Mock login: we just save the username, there is no real server
   const login = (username) => {
@@ -28,7 +37,7 @@ export function AppProvider({ children }) {
   };
 
   // The favorite movies, saved in localStorage
-  const [favorites, setFavorites] = useLocalStorage('favorites', []);
+  const [favorites, setFavorites] = useLocalStorage('favorites', [], isValidFavorites);
 
   // Check if a movie is already in the favorites
   const isFavorite = (movieId) => {
