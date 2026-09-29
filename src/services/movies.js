@@ -7,6 +7,12 @@ export async function getTrending() {
   return response.data.results;
 }
 
+// Get the list of all movie genres, for example [{ id: 28, name: 'Action' }, ...]
+export async function getGenres() {
+  const response = await tmdb.get('/genre/movie/list');
+  return response.data.genres;
+}
+
 // Get the full details of one movie by its id.
 // append_to_response adds the cast (credits) and trailers (videos) to the same answer.
 // Returns one movie object (title, overview, genres, credits, videos, etc.)

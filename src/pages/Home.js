@@ -5,10 +5,11 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
 import MovieGrid from '../components/MovieGrid';
 import SearchBar from '../components/SearchBar';
+import FilterBar from '../components/FilterBar';
 import ErrorMessage from '../components/ErrorMessage';
 import useDebounce from '../hooks/useDebounce';
 import useLocalStorage from '../hooks/useLocalStorage';
-import { getTrending, searchMovies } from '../services/movies';
+import { getTrending, searchMovies, getGenres } from '../services/movies';
 import { getErrorMessage } from '../services/errorMessage';
 
 // Home page: shows trending movies, or search results when the user types
@@ -18,6 +19,11 @@ function Home() {
   const [error, setError] = useState('');
   // The search text is saved in localStorage, so the last search is remembered
   const [query, setQuery] = useLocalStorage('lastSearch', '');
+
+  // Filters: genre is '' (all) or a genre id. Year and rating come in the next parts.
+  const [filters, setFilters] = useState({ genre: '' });
+  // The genre list for the dropdown
+  const [genres, setGenres] = useState([]);
 
   // For infinite scroll
   const [page, setPage] = useState(1);
@@ -36,6 +42,16 @@ function Home() {
   // Wait until the user stops typing before we search
   const debouncedQuery = useDebounce(query, 500);
   const searchText = debouncedQuery.trim();
+
+  // Load the genre names one time for the dropdown
+  useEffect(() => {
+    getGenres()
+      .then((list) => setGenres(list))
+      .catch(() => {
+        // If this fails the dropdown just stays empty, the rest of the page still works
+        setGenres([]);
+      });
+  }, []);
 
   // Runs on first load and every time the search text changes (loads page 1)
   useEffect(() => {
@@ -139,12 +155,24 @@ function Home() {
     return () => {
       observer.disconnect();
     };
-  }, [movies, page, totalPages, loading, loadingMore, moreError, searchText]);
+    // filters is in the list so we check again after a filter changes
+    // (if few movies match, the bottom box stays visible and more pages load)
+  }, [movies, filters, page, totalPages, loading, loadingMore, moreError, searchText]);
+
+  // Only the movies that match the chosen filters
+  const visibleMovies = movies.filter((movie) => {
+    const movieGenres = movie.genre_ids || [];
+    return filters.genre === '' || movieGenres.includes(filters.genre);
+  });
 
   return (
     <Container sx={{ py: 3 }}>
       <Box sx={{ mb: 3 }}>
         <SearchBar value={query} onChange={setQuery} />
+      </Box>
+
+      <Box sx={{ mb: 3 }}>
+        <FilterBar filters={filters} genres={genres} onChange={setFilters} />
       </Box>
 
       <Typography variant="h5" component="h1" sx={{ mb: 2 }}>
@@ -168,7 +196,14 @@ function Home() {
 
       {!loading && !error && movies.length > 0 && (
         <>
-          <MovieGrid movies={movies} />
+          {visibleMovies.length > 0 ? (
+            <MovieGrid movies={visibleMovies} />
+          ) : (
+            // Movies were loaded, but none match the filters
+            <Typography color="text.secondary" sx={{ mt: 4, textAlign: 'center' }}>
+              No movies match your filters.
+            </Typography>
+          )}
 
           {/* This empty box is what the scroll watcher looks at */}
           <Box ref={bottomRef} sx={{ height: 1 }} />
