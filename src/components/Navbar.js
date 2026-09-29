@@ -11,6 +11,7 @@ import MovieFilterIcon from '@mui/icons-material/MovieFilter';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import { useAppContext } from '../context/AppContext';
+import UserBadge from './UserBadge';
 
 // Top bar shown on every page, with the logo and page links
 function Navbar() {
@@ -71,6 +72,9 @@ function Navbar() {
           {/* component={Link} makes the button change page without reloading */}
           {user ? (
             <>
+              {/* Avatar with the first letter of the name, and "Hi, name" on bigger screens */}
+              <UserBadge user={user} />
+
               {/* Text buttons: hidden on phones (the bottom bar has the links there) */}
               <Box component="nav" aria-label="main" sx={{ display: { xs: 'none', sm: 'flex' }, gap: 0.5 }}>
                 <Button

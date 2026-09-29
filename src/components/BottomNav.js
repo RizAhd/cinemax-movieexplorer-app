@@ -4,6 +4,7 @@ import BottomNavigation from '@mui/material/BottomNavigation';
 import BottomNavigationAction from '@mui/material/BottomNavigationAction';
 import HomeIcon from '@mui/icons-material/Home';
 import FavoriteIcon from '@mui/icons-material/Favorite';
+import PersonIcon from '@mui/icons-material/Person';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { useAppContext } from '../context/AppContext';
 
@@ -19,8 +20,8 @@ function BottomNav() {
     return null;
   }
 
-  // Only Home and Favorites can be selected. On other pages nothing is selected.
-  const value = pathname === '/' || pathname === '/favorites' ? pathname : false;
+  // Only Home, Favorites and Profile can be selected. On other pages nothing is selected.
+  const value = ['/', '/favorites', '/profile'].includes(pathname) ? pathname : false;
 
   // Sign out and go back to the login page
   const handleSignOut = () => {
@@ -56,6 +57,13 @@ function BottomNav() {
           icon={<FavoriteIcon />}
           component={Link}
           to="/favorites"
+        />
+        <BottomNavigationAction
+          label="Profile"
+          value="/profile"
+          icon={<PersonIcon />}
+          component={Link}
+          to="/profile"
         />
         <BottomNavigationAction label="Sign out" icon={<LogoutIcon />} onClick={handleSignOut} />
       </BottomNavigation>

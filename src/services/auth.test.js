@@ -1,4 +1,4 @@
-import { registerUser, loginUser, hashPassword } from './auth';
+import { registerUser, loginUser, hashPassword, getAccount, updateProfile, changePassword } from './auth';
 
 const form = {
   firstName: 'Riflan',
@@ -122,6 +122,156 @@ describe('auth service', () => {
       expect((await loginUser('riflan_m', 'Str0ng!Pass')).ok).toBe(false);
       localStorage.setItem('users', JSON.stringify([{ username: 'riflan_m' }, null, 5]));
       expect((await loginUser('riflan_m', 'Str0ng!Pass')).ok).toBe(false);
+    });
+  });
+
+  describe('getAccount', () => {
+    test('gives the public details of an account, and null when there is none', async () => {
+      await registerUser(form);
+      expect(getAccount('RIFLAN_M')).toEqual({ firstName: 'Riflan', username: 'riflan_m', email: 'riflan@example.com' });
+      expect(getAccount('nobody')).toBeNull();
+    });
+  });
+
+  describe('updateProfile', () => {
+    beforeEach(async () => {
+      await registerUser(form);
+      await registerUser({ ...form, username: 'second_user', email: 'second@example.com', firstName: 'Second' });
+    });
+
+    test('changes only the first name without asking for the password', async () => {
+      const result = await updateProfile('riflan_m', { firstName: 'Riflan Ahmed', email: 'riflan@example.com' });
+      expect(result.ok).toBe(true);
+      expect(result.user).toEqual({ firstName: 'Riflan Ahmed', username: 'riflan_m', email: 'riflan@example.com' });
+      expect(getAccount('riflan_m').firstName).toBe('Riflan Ahmed');
+    });
+
+    test('changes the email when the current password is right, and the user can log in with the new email', async () => {
+      const result = await updateProfile('riflan_m', {
+        firstName: 'Riflan',
+        email: 'New.Email@Example.com',
+        currentPassword: 'Str0ng!Pass',
+      });
+      expect(result.ok).toBe(true);
+      expect(result.user.email).toBe('new.email@example.com');
+      expect((await loginUser('new.email@example.com', 'Str0ng!Pass')).ok).toBe(true);
+      // The old email does not work any more
+      expect((await loginUser('riflan@example.com', 'Str0ng!Pass')).ok).toBe(false);
+    });
+
+    test('does not change the email without the current password', async () => {
+      const result = await updateProfile('riflan_m', { firstName: 'Riflan', email: 'other@example.com' });
+      expect(result.ok).toBe(false);
+      expect(result.errors.currentPassword).toMatch(/current password/i);
+      expect(getAccount('riflan_m').email).toBe('riflan@example.com');
+    });
+
+    test('does not change the email with a wrong current password', async () => {
+      const result = await updateProfile('riflan_m', {
+        firstName: 'Riflan',
+        email: 'other@example.com',
+        currentPassword: 'Wrong!Pass1',
+      });
+      expect(result.ok).toBe(false);
+      expect(result.errors.currentPassword).toMatch(/not correct/i);
+      expect(getAccount('riflan_m').email).toBe('riflan@example.com');
+    });
+
+    test('does not allow an email that another account uses', async () => {
+      const result = await updateProfile('riflan_m', {
+        firstName: 'Riflan',
+        email: 'SECOND@example.com',
+        currentPassword: 'Str0ng!Pass',
+      });
+      expect(result.ok).toBe(false);
+      expect(result.errors.email).toMatch(/already exists/i);
+    });
+
+    test('rejects a bad first name or a bad email', async () => {
+      const result = await updateProfile('riflan_m', { firstName: 'R2', email: 'nope' });
+      expect(result.ok).toBe(false);
+      expect(Object.keys(result.errors).sort()).toEqual(['email', 'firstName']);
+    });
+
+    test('never changes the username or the password, even if they are sent', async () => {
+      const before = JSON.parse(localStorage.getItem('users'))[0];
+      const result = await updateProfile('riflan_m', {
+        firstName: 'Riflan',
+        email: 'riflan@example.com',
+        username: 'hacker',
+        password: 'Hack3r!Pass',
+        passwordHash: 'x',
+      });
+      expect(result.ok).toBe(true);
+      const after = JSON.parse(localStorage.getItem('users'))[0];
+      expect(after.username).toBe('riflan_m');
+      expect(after.passwordHash).toBe(before.passwordHash);
+      expect(after.salt).toBe(before.salt);
+    });
+
+    test('leaves the other accounts alone', async () => {
+      await updateProfile('riflan_m', { firstName: 'Changed', email: 'riflan@example.com' });
+      expect(getAccount('second_user').firstName).toBe('Second');
+    });
+
+    test('gives an error when the person has no saved account', async () => {
+      const result = await updateProfile('ghost', { firstName: 'Ghost', email: 'ghost@example.com' });
+      expect(result.ok).toBe(false);
+      expect(result.error).toMatch(/could not find your account/i);
+    });
+  });
+
+  describe('changePassword', () => {
+    beforeEach(async () => {
+      await registerUser(form);
+    });
+
+    test('changes the password: the new one works and the old one stops working', async () => {
+      const result = await changePassword('riflan_m', {
+        currentPassword: 'Str0ng!Pass',
+        newPassword: 'N3w!Password',
+        confirm: 'N3w!Password',
+      });
+      expect(result.ok).toBe(true);
+      expect((await loginUser('riflan_m', 'N3w!Password')).ok).toBe(true);
+      expect((await loginUser('riflan_m', 'Str0ng!Pass')).ok).toBe(false);
+    });
+
+    test('uses a new salt and never saves the new password as plain text', async () => {
+      const before = JSON.parse(localStorage.getItem('users'))[0];
+      await changePassword('riflan_m', { currentPassword: 'Str0ng!Pass', newPassword: 'N3w!Password', confirm: 'N3w!Password' });
+      const after = JSON.parse(localStorage.getItem('users'))[0];
+      expect(after.salt).not.toBe(before.salt);
+      expect(after.passwordHash).not.toBe(before.passwordHash);
+      expect(localStorage.getItem('users')).not.toContain('N3w!Password');
+    });
+
+    test('needs the current password, and it must be right', async () => {
+      const empty = await changePassword('riflan_m', { currentPassword: '', newPassword: 'N3w!Password', confirm: 'N3w!Password' });
+      expect(empty.errors.currentPassword).toMatch(/enter your current password/i);
+      const wrong = await changePassword('riflan_m', { currentPassword: 'Wrong!Pass1', newPassword: 'N3w!Password', confirm: 'N3w!Password' });
+      expect(wrong.errors.currentPassword).toMatch(/not correct/i);
+      // Nothing changed
+      expect((await loginUser('riflan_m', 'Str0ng!Pass')).ok).toBe(true);
+    });
+
+    test('the new password must follow the rules and match the confirmation', async () => {
+      const weak = await changePassword('riflan_m', { currentPassword: 'Str0ng!Pass', newPassword: 'weak', confirm: 'weak' });
+      expect(weak.errors.newPassword).toBeTruthy();
+      const mismatch = await changePassword('riflan_m', { currentPassword: 'Str0ng!Pass', newPassword: 'N3w!Password', confirm: 'N3w!Passwore' });
+      expect(mismatch.errors.confirm).toMatch(/do not match/i);
+    });
+
+    test('the new password must be different from the current one', async () => {
+      const same = await changePassword('riflan_m', { currentPassword: 'Str0ng!Pass', newPassword: 'Str0ng!Pass', confirm: 'Str0ng!Pass' });
+      expect(same.ok).toBe(false);
+      expect(same.errors.newPassword).toMatch(/different/i);
+    });
+
+    test('gives an error when the person has no saved account', async () => {
+      const result = await changePassword('ghost', { currentPassword: 'x', newPassword: 'N3w!Password', confirm: 'N3w!Password' });
+      expect(result.ok).toBe(false);
+      expect(result.error).toMatch(/could not find your account/i);
     });
   });
 

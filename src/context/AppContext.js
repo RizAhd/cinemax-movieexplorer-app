@@ -1,6 +1,11 @@
 import { createContext, useContext } from 'react';
 import useLocalStorage from '../hooks/useLocalStorage';
-import { loginUser, registerUser } from '../services/auth';
+import {
+  loginUser,
+  registerUser,
+  updateProfile as updateAccountProfile,
+  changePassword as changeAccountPassword,
+} from '../services/auth';
 
 // Checks for the values we read from localStorage. A saved value that fails its check is ignored.
 const isValidMode = (value) => value === 'light' || value === 'dark';
@@ -49,6 +54,31 @@ export function AppProvider({ children }) {
     return result;
   };
 
+  // Change the first name and/or the email of the logged in person. The username cannot change.
+  // values = { firstName, email, currentPassword }
+  // Returns { ok: true } or { ok: false, errors: { field: message }, error: message }
+  const updateProfile = async (values) => {
+    if (!user) {
+      return { ok: false, error: 'You are not logged in.' };
+    }
+    const result = await updateAccountProfile(user.username, values);
+    if (result.ok) {
+      // The new details show up everywhere at once (for example in the top bar)
+      setUser(result.user);
+    }
+    return result;
+  };
+
+  // Change the password of the logged in person.
+  // values = { currentPassword, newPassword, confirm }
+  // Returns { ok: true } or { ok: false, errors: { field: message }, error: message }
+  const changePassword = async (values) => {
+    if (!user) {
+      return { ok: false, error: 'You are not logged in.' };
+    }
+    return changeAccountPassword(user.username, values);
+  };
+
   // Sign out: clear the saved user
   const logout = () => {
     setUser(null);
@@ -85,6 +115,8 @@ export function AppProvider({ children }) {
     user,
     login,
     register,
+    updateProfile,
+    changePassword,
     logout,
     favorites,
     isFavorite,

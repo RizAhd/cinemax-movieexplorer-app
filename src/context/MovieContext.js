@@ -10,7 +10,11 @@ import { getErrorMessage } from '../services/errorMessage';
 const MovieContext = createContext();
 
 export function MovieProvider({ children }) {
-  const { user } = useAppContext();
+  // Here we only need to know IF somebody is logged in (true or false), not who.
+  // Using true/false, and not the whole user object, means changing the name or email in the
+  // profile does not make the movies load again.
+  const { user: currentUser } = useAppContext();
+  const user = Boolean(currentUser);
 
   // The search text is saved in localStorage, so the last search is remembered
   const [query, setQuery] = useLocalStorage('lastSearch', '', (value) => typeof value === 'string');

@@ -18,6 +18,7 @@ import SignUp from './pages/SignUp';
 import Home from './pages/Home';
 import MovieDetails from './pages/MovieDetails';
 import Favorites from './pages/Favorites';
+import Profile from './pages/Profile';
 import NotFound from './pages/NotFound';
 
 function App() {
@@ -95,6 +96,14 @@ function App() {
                     element={
                       <ProtectedRoute>
                         <MovieDetails />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/profile"
+                    element={
+                      <ProtectedRoute>
+                        <Profile />
                       </ProtectedRoute>
                     }
                   />
