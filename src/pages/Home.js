@@ -15,6 +15,7 @@ import Box from '@mui/material/Box';
 import MovieGrid from '../components/MovieGrid';
 import SearchBar from '../components/SearchBar';
 import FilterBar from '../components/FilterBar';
+import { smoothMenuProps } from '../components/menuProps';
 import HeroBanner from '../components/HeroBanner';
 import SectionTitle from '../components/SectionTitle';
 import ErrorMessage from '../components/ErrorMessage';
@@ -205,6 +206,7 @@ function Home() {
               label="Sort by"
               value={sortBy}
               onChange={(event) => setSortBy(event.target.value)}
+              slotProps={{ select: { MenuProps: smoothMenuProps } }}
               sx={{
                 minWidth: 200,
                 '& .MuiOutlinedInput-root': { borderRadius: '12px', bgcolor: 'background.default' },

@@ -1,5 +1,6 @@
 import TextField from '@mui/material/TextField';
 import MenuItem from '@mui/material/MenuItem';
+import { smoothMenuProps } from './menuProps';
 
 // Same look for all the dropdowns: rounded corners, and the same height as the search bar
 const fieldStyle = {
@@ -29,6 +30,7 @@ function FilterBar({ filters, genres, onChange }) {
         label="Genre"
         value={filters.genre}
         onChange={(event) => onChange({ ...filters, genre: event.target.value })}
+        slotProps={{ select: { MenuProps: smoothMenuProps } }}
         sx={{ ...fieldStyle, gridColumn: { xs: '1 / -1', md: 'auto' } }}
       >
         <MenuItem value="">All genres</MenuItem>
@@ -46,6 +48,7 @@ function FilterBar({ filters, genres, onChange }) {
         label="Year"
         value={filters.year}
         onChange={(event) => onChange({ ...filters, year: event.target.value })}
+        slotProps={{ select: { MenuProps: smoothMenuProps } }}
         sx={fieldStyle}
       >
         <MenuItem value="">All years</MenuItem>
@@ -63,6 +66,7 @@ function FilterBar({ filters, genres, onChange }) {
         label="Rating"
         value={filters.rating}
         onChange={(event) => onChange({ ...filters, rating: event.target.value })}
+        slotProps={{ select: { MenuProps: smoothMenuProps } }}
         sx={fieldStyle}
       >
         <MenuItem value="">All ratings</MenuItem>
