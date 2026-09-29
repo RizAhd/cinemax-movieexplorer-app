@@ -10,7 +10,9 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import StarIcon from '@mui/icons-material/Star';
 import CastList from '../components/CastList';
 import TrailerEmbed from '../components/TrailerEmbed';
+import ErrorMessage from '../components/ErrorMessage';
 import { getMovie } from '../services/movies';
+import { getErrorMessage } from '../services/errorMessage';
 
 // Start of every TMDb poster url
 const IMAGE_URL = 'https://image.tmdb.org/t/p/w500';
@@ -23,6 +25,9 @@ function MovieDetails() {
   const [movie, setMovie] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  // Going up by one makes the movie load again (used by the Retry button)
+  const [retryCount, setRetryCount] = useState(0);
 
   // Load the movie when the page opens (or when the id changes)
   useEffect(() => {
@@ -38,10 +43,9 @@ function MovieDetails() {
           setMovie(data);
         }
       })
-      .catch(() => {
-        // Simple message for now, better error handling comes later
+      .catch((err) => {
         if (!ignore) {
-          setError('Could not load this movie.');
+          setError(getErrorMessage(err));
         }
       })
       .finally(() => {
@@ -53,7 +57,7 @@ function MovieDetails() {
     return () => {
       ignore = true;
     };
-  }, [id]);
+  }, [id, retryCount]);
 
   // Small pieces of text for the info line
   const year = movie && movie.release_date ? movie.release_date.slice(0, 4) : '';
@@ -72,7 +76,7 @@ function MovieDetails() {
         </Box>
       )}
 
-      {error && <Typography color="error">{error}</Typography>}
+      {error && <ErrorMessage message={error} onRetry={() => setRetryCount(retryCount + 1)} />}
 
       {!loading && !error && movie && (
         // Column on phones (poster on top), row on bigger screens (poster on the left)

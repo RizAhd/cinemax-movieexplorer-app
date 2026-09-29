@@ -5,9 +5,11 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
 import MovieGrid from '../components/MovieGrid';
 import SearchBar from '../components/SearchBar';
+import ErrorMessage from '../components/ErrorMessage';
 import useDebounce from '../hooks/useDebounce';
 import useLocalStorage from '../hooks/useLocalStorage';
 import { getTrending, searchMovies } from '../services/movies';
+import { getErrorMessage } from '../services/errorMessage';
 
 // Home page: shows trending movies, or search results when the user types
 function Home() {
@@ -22,6 +24,9 @@ function Home() {
   const [totalPages, setTotalPages] = useState(1);
   const [loadingMore, setLoadingMore] = useState(false);
   const [moreError, setMoreError] = useState('');
+
+  // Going up by one makes the first load run again (used by the Retry button)
+  const [retryCount, setRetryCount] = useState(0);
 
   // The invisible box at the bottom of the grid. When it comes into view, we load more.
   const bottomRef = useRef(null);
@@ -58,10 +63,9 @@ function Home() {
           setTotalPages(data.totalPages);
         }
       })
-      .catch(() => {
-        // Simple message for now, better error handling comes later
+      .catch((err) => {
         if (!ignore) {
-          setError('Could not load movies.');
+          setError(getErrorMessage(err));
         }
       })
       .finally(() => {
@@ -75,7 +79,7 @@ function Home() {
     return () => {
       ignore = true;
     };
-  }, [searchText]);
+  }, [searchText, retryCount]);
 
   // Infinite scroll: watch the bottom box and load the next page when it is visible
   useEffect(() => {
@@ -110,9 +114,9 @@ function Home() {
           });
           setPage(nextPage);
         })
-        .catch(() => {
+        .catch((err) => {
           if (latestSearch.current === requestedText) {
-            setMoreError('Could not load more movies.');
+            setMoreError(getErrorMessage(err));
           }
         })
         .finally(() => {
@@ -153,7 +157,7 @@ function Home() {
         </Box>
       )}
 
-      {error && <Typography color="error">{error}</Typography>}
+      {error && <ErrorMessage message={error} onRetry={() => setRetryCount(retryCount + 1)} />}
 
       {/* Search finished but nothing was found */}
       {!loading && !error && movies.length === 0 && (
@@ -175,11 +179,8 @@ function Home() {
             </Box>
           )}
 
-          {moreError && (
-            <Typography color="error" sx={{ mt: 2, textAlign: 'center' }}>
-              {moreError}
-            </Typography>
-          )}
+          {/* Retry clears the error, which lets the scroll watcher try again */}
+          {moreError && <ErrorMessage message={moreError} onRetry={() => setMoreError('')} />}
         </>
       )}
     </Container>
