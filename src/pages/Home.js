@@ -1,6 +1,9 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import Switch from '@mui/material/Switch';
+import FormControlLabel from '@mui/material/FormControlLabel';
 import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
 import MovieGrid from '../components/MovieGrid';
@@ -26,7 +29,11 @@ function Home() {
   // The genre list for the dropdown
   const [genres, setGenres] = useState([]);
 
-  // For infinite scroll
+  // How more movies are loaded: 'scroll' (infinite scroll) or 'button' (Load More button).
+  // Saved in localStorage so the choice is remembered.
+  const [loadMode, setLoadMode] = useLocalStorage('loadMode', 'scroll');
+
+  // For loading more pages
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -98,48 +105,54 @@ function Home() {
     };
   }, [searchText, retryCount]);
 
+  // Load the next page and add it to the list.
+  // Both the scroll watcher and the Load More button use this function.
+  const loadMore = useCallback(() => {
+    const noMorePages = page >= totalPages;
+    // Trending has one page, and we do not load while another load is running
+    if (searchText === '' || noMorePages || loading || loadingMore || moreError) {
+      return;
+    }
+
+    const nextPage = page + 1;
+    const requestedText = searchText;
+    setLoadingMore(true);
+
+    searchMovies(requestedText, nextPage)
+      .then((data) => {
+        // The user searched for something else in the meantime, so ignore this
+        if (latestSearch.current !== requestedText) {
+          return;
+        }
+        // TMDb can send the same movie twice, so we skip movies we already have
+        setMovies((oldMovies) => {
+          const oldIds = oldMovies.map((movie) => movie.id);
+          const newMovies = data.results.filter((movie) => !oldIds.includes(movie.id));
+          return [...oldMovies, ...newMovies];
+        });
+        setPage(nextPage);
+      })
+      .catch((err) => {
+        if (latestSearch.current === requestedText) {
+          setMoreError(getErrorMessage(err));
+        }
+      })
+      .finally(() => {
+        setLoadingMore(false);
+      });
+  }, [page, totalPages, loading, loadingMore, moreError, searchText]);
+
   // Infinite scroll: watch the bottom box and load the next page when it is visible
   useEffect(() => {
+    // In Load More button mode we do not watch the scroll
+    if (loadMode !== 'scroll') {
+      return;
+    }
+
     const target = bottomRef.current;
     if (!target) {
       return;
     }
-
-    // Load the next page and add it to the list
-    const loadMore = () => {
-      const noMorePages = page >= totalPages;
-      // Trending has one page, and we do not load while another load is running
-      if (searchText === '' || noMorePages || loading || loadingMore || moreError) {
-        return;
-      }
-
-      const nextPage = page + 1;
-      const requestedText = searchText;
-      setLoadingMore(true);
-
-      searchMovies(requestedText, nextPage)
-        .then((data) => {
-          // The user searched for something else in the meantime, so ignore this
-          if (latestSearch.current !== requestedText) {
-            return;
-          }
-          // TMDb can send the same movie twice, so we skip movies we already have
-          setMovies((oldMovies) => {
-            const oldIds = oldMovies.map((movie) => movie.id);
-            const newMovies = data.results.filter((movie) => !oldIds.includes(movie.id));
-            return [...oldMovies, ...newMovies];
-          });
-          setPage(nextPage);
-        })
-        .catch((err) => {
-          if (latestSearch.current === requestedText) {
-            setMoreError(getErrorMessage(err));
-          }
-        })
-        .finally(() => {
-          setLoadingMore(false);
-        });
-    };
 
     // The 200px margin starts loading a little before the user reaches the bottom
     const observer = new IntersectionObserver(
@@ -158,7 +171,10 @@ function Home() {
     };
     // filters is in the list so we check again after a filter changes
     // (if few movies match, the bottom box stays visible and more pages load)
-  }, [movies, filters, page, totalPages, loading, loadingMore, moreError, searchText]);
+  }, [loadMode, loadMore, movies, filters]);
+
+  // Are there more pages to load? (only search results have pages)
+  const hasMore = searchText !== '' && page < totalPages;
 
   // Only the movies that match the chosen filters
   const visibleMovies = movies.filter((movie) => {
@@ -183,6 +199,17 @@ function Home() {
 
       <Box sx={{ mb: 3 }}>
         <FilterBar filters={filters} genres={genres} onChange={setFilters} />
+        {/* Switch between infinite scroll and the Load More button */}
+        <FormControlLabel
+          control={
+            <Switch
+              checked={loadMode === 'button'}
+              onChange={(event) => setLoadMode(event.target.checked ? 'button' : 'scroll')}
+            />
+          }
+          label="Use Load More button"
+          sx={{ mt: 1 }}
+        />
       </Box>
 
       <Typography variant="h5" component="h1" sx={{ mb: 2 }}>
@@ -215,8 +242,17 @@ function Home() {
             </Typography>
           )}
 
-          {/* This empty box is what the scroll watcher looks at */}
-          <Box ref={bottomRef} sx={{ height: 1 }} />
+          {/* Scroll mode: this empty box is what the scroll watcher looks at */}
+          {loadMode === 'scroll' && <Box ref={bottomRef} sx={{ height: 1 }} />}
+
+          {/* Button mode: a button to load the next page */}
+          {loadMode === 'button' && hasMore && !loadingMore && !moreError && (
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
+              <Button variant="outlined" onClick={loadMore}>
+                Load more
+              </Button>
+            </Box>
+          )}
 
           {loadingMore && (
             <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
