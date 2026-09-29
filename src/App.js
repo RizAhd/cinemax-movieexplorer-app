@@ -3,6 +3,7 @@ import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { useAppContext } from './context/AppContext';
 import { getTheme } from './theme';
+import Navbar from './components/Navbar';
 import Login from './pages/Login';
 import Home from './pages/Home';
 import MovieDetails from './pages/MovieDetails';
@@ -17,6 +18,8 @@ function App() {
       {/* CssBaseline applies the theme background and text color to the page */}
       <CssBaseline />
       <BrowserRouter>
+        {/* Navbar is inside BrowserRouter because its links need the router */}
+        <Navbar />
         {/* Each Route shows one page for one url */}
         <Routes>
           <Route path="/login" element={<Login />} />
