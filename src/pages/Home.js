@@ -11,6 +11,7 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import CircularProgress from '@mui/material/CircularProgress';
 import LinearProgress from '@mui/material/LinearProgress';
 import FilterAltOffIcon from '@mui/icons-material/FilterAltOff';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Box from '@mui/material/Box';
 import MovieGrid from '../components/MovieGrid';
 import SearchBar from '../components/SearchBar';
@@ -278,8 +279,8 @@ function Home() {
           {/* Button mode: a button to load the next page */}
           {loadMode === 'button' && hasMore && !loadingMore && !moreError && (
             <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
-              <Button variant="outlined" onClick={loadMore}>
-                Load more
+              <Button variant="outlined" size="large" onClick={loadMore} endIcon={<ExpandMoreIcon />}>
+                Load more movies
               </Button>
             </Box>
           )}

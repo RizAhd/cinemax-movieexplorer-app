@@ -1,10 +1,15 @@
 import tmdb from './tmdb';
 
-// Get the trending movies of the week.
-// Returns an array of movies (each one has id, title, poster_path, etc.)
-export async function getTrending() {
-  const response = await tmdb.get('/trending/movie/week');
-  return response.data.results;
+// Get the trending movies of the week. TMDb sends them in pages of about 20 movies.
+// Returns { results: [movies], totalPages: number }
+export async function getTrending(page = 1) {
+  const response = await tmdb.get('/trending/movie/week', {
+    params: { page: page },
+  });
+  return {
+    results: response.data.results,
+    totalPages: response.data.total_pages,
+  };
 }
 
 // Get the list of all movie genres, for example [{ id: 28, name: 'Action' }, ...]

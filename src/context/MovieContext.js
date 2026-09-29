@@ -38,9 +38,9 @@ export function MovieProvider({ children }) {
   // How the movies are sorted: '' (the order TMDb sent), 'rating', 'year-new', 'year-old' or 'title'
   const [sortBy, setSortBy] = useState('');
 
-  // How more movies are loaded: 'scroll' (infinite scroll) or 'button' (Load More button).
-  // Saved in localStorage so the choice is remembered.
-  const [loadMode, setLoadMode] = useLocalStorage('loadMode', 'scroll');
+  // How more movies are loaded: 'button' (Load More button) or 'scroll' (infinite scroll).
+  // The button is the default. The choice is saved in localStorage.
+  const [loadMode, setLoadMode] = useLocalStorage('loadMode', 'button');
 
   // Remembers the latest search text, so old answers can be ignored
   const latestSearch = useRef('');
@@ -78,13 +78,8 @@ export function MovieProvider({ children }) {
     setMoreError('');
     setPage(1);
 
-    // No text means trending (one page only), some text means search
-    let request;
-    if (searchText === '') {
-      request = getTrending().then((results) => ({ results, totalPages: 1 }));
-    } else {
-      request = searchMovies(searchText, 1);
-    }
+    // No text means trending, some text means search. Both come in pages.
+    const request = searchText === '' ? getTrending(1) : searchMovies(searchText, 1);
 
     request
       .then((data) => {
@@ -115,8 +110,8 @@ export function MovieProvider({ children }) {
   // Both the scroll watcher and the Load More button use this function.
   const loadMore = useCallback(() => {
     const noMorePages = page >= totalPages;
-    // Trending has one page, and we do not load while another load is running
-    if (searchText === '' || noMorePages || loading || loadingMore || moreError) {
+    // We do not load when there are no more pages, or while another load is running
+    if (noMorePages || loading || loadingMore || moreError) {
       return;
     }
 
@@ -124,7 +119,11 @@ export function MovieProvider({ children }) {
     const requestedText = searchText;
     setLoadingMore(true);
 
-    searchMovies(requestedText, nextPage)
+    // Same as the first load: trending when there is no search text, search otherwise
+    const request =
+      requestedText === '' ? getTrending(nextPage) : searchMovies(requestedText, nextPage);
+
+    request
       .then((data) => {
         // The user searched for something else in the meantime, so ignore this
         if (latestSearch.current !== requestedText) {
@@ -148,8 +147,8 @@ export function MovieProvider({ children }) {
       });
   }, [page, totalPages, loading, loadingMore, moreError, searchText]);
 
-  // Are there more pages to load? (only search results have pages)
-  const hasMore = searchText !== '' && page < totalPages;
+  // Are there more pages to load?
+  const hasMore = page < totalPages;
 
   // Try the first load again after an error
   const retry = () => {
