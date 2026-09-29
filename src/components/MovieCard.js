@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Card from '@mui/material/Card';
 import CardActionArea from '@mui/material/CardActionArea';
@@ -16,6 +17,9 @@ import { IMAGE_URL } from '../services/tmdb';
 function MovieCard({ movie }) {
   const { isFavorite, toggleFavorite } = useAppContext();
   const favorite = isFavorite(movie.id);
+
+  // false until the poster picture has finished loading, then it fades in
+  const [imageLoaded, setImageLoaded] = useState(false);
 
   // release_date looks like "2024-05-17", so we take the first 4 letters
   const year = movie.release_date ? movie.release_date.slice(0, 4) : 'N/A';
@@ -66,6 +70,8 @@ function MovieCard({ movie }) {
             position: 'relative',
             borderRadius: '16px',
             overflow: 'hidden',
+            // Grey block that shows until the poster has loaded
+            bgcolor: 'action.hover',
             transition: 'box-shadow 0.25s',
           }}
         >
@@ -74,11 +80,17 @@ function MovieCard({ movie }) {
               component="img"
               image={IMAGE_URL + movie.poster_path}
               alt={movie.title}
+              // Only load the picture when the card is near the screen
+              loading="lazy"
+              onLoad={() => setImageLoaded(true)}
+              // If the picture fails, still show the card instead of leaving it invisible
+              onError={() => setImageLoaded(true)}
               sx={{
                 aspectRatio: '2 / 3',
                 objectFit: 'cover',
                 display: 'block',
-                transition: 'transform 0.4s',
+                opacity: imageLoaded ? 1 : 0,
+                transition: 'transform 0.4s, opacity 0.5s',
               }}
             />
           ) : (

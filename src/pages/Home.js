@@ -7,6 +7,7 @@ import Skeleton from '@mui/material/Skeleton';
 import Switch from '@mui/material/Switch';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import CircularProgress from '@mui/material/CircularProgress';
+import LinearProgress from '@mui/material/LinearProgress';
 import FilterAltOffIcon from '@mui/icons-material/FilterAltOff';
 import Box from '@mui/material/Box';
 import MovieGrid from '../components/MovieGrid';
@@ -177,8 +178,11 @@ function Home() {
         {searchText === '' ? 'Trending this week' : `Results for "${searchText}"`}
       </SectionTitle>
 
-      {/* While loading, show grey placeholder cards instead of a spinner */}
-      {loading && <MovieGrid loading />}
+      {/* The very first time there is nothing to show, so we show grey placeholder cards */}
+      {loading && movies.length === 0 && <MovieGrid loading />}
+
+      {/* Later loads keep the old movies on screen (dimmed) and show a thin progress bar */}
+      {loading && movies.length > 0 && <LinearProgress sx={{ borderRadius: 999, mb: 2 }} />}
 
       {error && <ErrorMessage message={error} onRetry={retry} />}
 
@@ -189,8 +193,15 @@ function Home() {
         </Typography>
       )}
 
-      {!loading && !error && movies.length > 0 && (
-        <>
+      {!error && movies.length > 0 && (
+        // While a new search loads, the old movies fade and cannot be clicked
+        <Box
+          sx={{
+            opacity: loading ? 0.45 : 1,
+            transition: 'opacity 0.25s',
+            pointerEvents: loading ? 'none' : 'auto',
+          }}
+        >
           {visibleMovies.length > 0 ? (
             <MovieGrid movies={visibleMovies} />
           ) : (
@@ -220,7 +231,7 @@ function Home() {
 
           {/* Retry clears the error, which lets the scroll watcher try again */}
           {moreError && <ErrorMessage message={moreError} onRetry={clearMoreError} />}
-        </>
+        </Box>
       )}
     </Container>
   );
