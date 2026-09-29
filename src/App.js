@@ -14,6 +14,7 @@ import Login from './pages/Login';
 import Home from './pages/Home';
 import MovieDetails from './pages/MovieDetails';
 import Favorites from './pages/Favorites';
+import NotFound from './pages/NotFound';
 
 function App() {
   // Get the current mode ('light' or 'dark') from the context
@@ -91,6 +92,8 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
+                {/* Any other url shows the 404 page */}
+                <Route path="*" element={<NotFound />} />
               </Routes>
             </PageFade>
           </Box>
