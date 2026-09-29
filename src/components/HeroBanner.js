@@ -1,18 +1,26 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import { keyframes } from '@emotion/react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
-import useMediaQuery from '@mui/material/useMediaQuery';
 import StarIcon from '@mui/icons-material/Star';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import PauseIcon from '@mui/icons-material/Pause';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import { BACKDROP_URL } from '../services/tmdb';
 
 // How long each slide stays, in milliseconds
 const SLIDE_TIME = 6000;
+
+// Animation for the progress bar on the active dot: it fills from 0% to 100% width
+const fillProgress = keyframes`
+  from { width: 0%; }
+  to { width: 100%; }
+`;
 
 // One slide: a big picture with the movie info on top
 // rank = 1 for the first slide, 2 for the second, ...
@@ -133,17 +141,21 @@ function ArrowButton({ side, label, onClick, children }) {
 // movies = a list of movies that all have a backdrop_path
 function HeroBanner({ movies }) {
   const [index, setIndex] = useState(0);
-  // true while the mouse is over the banner or a control has focus
-  const [paused, setPaused] = useState(false);
+  // true while a real mouse is over the banner
+  const [hovering, setHovering] = useState(false);
+  // true while a keyboard user has focus on a control inside the banner
+  const [keyboardFocus, setKeyboardFocus] = useState(false);
+  // true when the user pressed the pause button
+  const [userPaused, setUserPaused] = useState(false);
   // Where the finger touched the screen (for swiping)
   const touchStartX = useRef(null);
-
-  // People who set "reduce motion" on their device do not get auto sliding
-  const reduceMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
 
   const count = movies.length;
   // Stay inside the list, even if the list gets shorter
   const current = Math.min(index, count - 1);
+
+  // The banner slides by itself unless it is paused in some way
+  const isPlaying = count > 1 && !hovering && !keyboardFocus && !userPaused;
 
   const goNext = () => setIndex((current + 1) % count);
   const goPrevious = () => setIndex((current - 1 + count) % count);
@@ -151,7 +163,7 @@ function HeroBanner({ movies }) {
   // Auto sliding: wait a few seconds, then go to the next slide.
   // The timer starts again every time the slide changes, also when the user changes it.
   useEffect(() => {
-    if (paused || reduceMotion || count < 2) {
+    if (!isPlaying) {
       return;
     }
     const timer = setTimeout(() => {
@@ -159,7 +171,7 @@ function HeroBanner({ movies }) {
     }, SLIDE_TIME);
 
     return () => clearTimeout(timer);
-  }, [current, paused, reduceMotion, count]);
+  }, [current, isPlaying, count]);
 
   // Swipe: remember where the finger started, and compare when it lifts
   const handleTouchStart = (event) => {
@@ -185,10 +197,12 @@ function HeroBanner({ movies }) {
       role="region"
       aria-roledescription="carousel"
       aria-label="Trending movies"
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
-      onFocus={() => setPaused(true)}
-      onBlur={() => setPaused(false)}
+      // Pause only for a real mouse. Touch screens fake a mouse enter that never ends.
+      onPointerEnter={(event) => setHovering(event.pointerType === 'mouse')}
+      onPointerLeave={() => setHovering(false)}
+      // Pause only for keyboard focus. Clicking a dot or an arrow must not stop the sliding.
+      onFocus={(event) => setKeyboardFocus(event.target.matches(':focus-visible'))}
+      onBlur={() => setKeyboardFocus(false)}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
       sx={{
@@ -212,7 +226,7 @@ function HeroBanner({ movies }) {
         ))}
       </Box>
 
-      {/* Arrows and dots only make sense with more than one slide */}
+      {/* Arrows, pause button and dots only make sense with more than one slide */}
       {count > 1 && (
         <>
           <ArrowButton side="left" label="previous movie" onClick={goPrevious}>
@@ -222,37 +236,69 @@ function HeroBanner({ movies }) {
             <ChevronRightIcon />
           </ArrowButton>
 
-          {/* One dot for each slide. The dot of the visible slide is longer and red. */}
+          {/* Bottom right: pause button and one dot for each slide */}
           <Box
             sx={{
               position: 'absolute',
-              bottom: { xs: 20, md: 28 },
-              right: { xs: 20, md: 40 },
+              bottom: { xs: 14, md: 22 },
+              right: { xs: 16, md: 36 },
               zIndex: 2,
               display: 'flex',
+              alignItems: 'center',
               gap: 1,
             }}
           >
-            {movies.map((movie, position) => (
-              <Box
-                key={movie.id}
-                component="button"
-                type="button"
-                aria-label={`Go to movie ${position + 1}`}
-                aria-current={position === current}
-                onClick={() => setIndex(position)}
-                sx={{
-                  width: position === current ? 26 : 8,
-                  height: 8,
-                  p: 0,
-                  border: 'none',
-                  borderRadius: 999,
-                  cursor: 'pointer',
-                  bgcolor: position === current ? 'primary.main' : 'rgba(255, 255, 255, 0.55)',
-                  transition: 'width 0.3s, background-color 0.3s',
-                }}
-              />
-            ))}
+            <IconButton
+              size="small"
+              onClick={() => setUserPaused(!userPaused)}
+              aria-label={userPaused ? 'play slideshow' : 'pause slideshow'}
+              sx={{ color: 'white', bgcolor: 'rgba(0, 0, 0, 0.45)', '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.7)' } }}
+            >
+              {userPaused ? <PlayArrowIcon fontSize="small" /> : <PauseIcon fontSize="small" />}
+            </IconButton>
+
+            {movies.map((movie, position) => {
+              const isCurrent = position === current;
+              return (
+                <Box
+                  key={movie.id}
+                  component="button"
+                  type="button"
+                  aria-label={`Go to movie ${position + 1}`}
+                  aria-current={isCurrent}
+                  onClick={() => setIndex(position)}
+                  sx={{
+                    position: 'relative',
+                    // The dot of the visible slide is a longer bar that shows the progress
+                    width: isCurrent ? 34 : 8,
+                    height: 8,
+                    p: 0,
+                    border: 'none',
+                    borderRadius: 999,
+                    overflow: 'hidden',
+                    cursor: 'pointer',
+                    bgcolor: 'rgba(255, 255, 255, 0.55)',
+                    transition: 'width 0.3s',
+                  }}
+                >
+                  {isCurrent && (
+                    // The red part grows from 0 to full while we wait for the next slide.
+                    // A new key restarts it when the slide changes or the play state changes.
+                    <Box
+                      key={`${current}-${isPlaying}`}
+                      sx={{
+                        height: '100%',
+                        bgcolor: 'primary.main',
+                        borderRadius: 999,
+                        // When paused the bar stays full
+                        width: isPlaying ? undefined : '100%',
+                        animation: isPlaying ? `${fillProgress} ${SLIDE_TIME}ms linear forwards` : 'none',
+                      }}
+                    />
+                  )}
+                </Box>
+              );
+            })}
           </Box>
         </>
       )}

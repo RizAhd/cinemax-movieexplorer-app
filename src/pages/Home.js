@@ -133,10 +133,10 @@ function Home() {
   // True when at least one filter is chosen
   const hasFilters = filters.genre !== '' || filters.year !== '' || filters.rating !== '';
 
-  // The banner slides through the first 5 trending movies that have a wide picture.
+  // The banner slides through the first 10 trending movies that have a wide picture.
   // It only shows for trending (no search text).
   const heroMovies =
-    searchText === '' ? movies.filter((movie) => movie.backdrop_path).slice(0, 5) : [];
+    searchText === '' ? movies.filter((movie) => movie.backdrop_path).slice(0, 10) : [];
 
   return (
     <Container sx={{ py: 3 }}>
