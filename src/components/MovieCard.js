@@ -2,7 +2,6 @@ import { Link } from 'react-router-dom';
 import Card from '@mui/material/Card';
 import CardActionArea from '@mui/material/CardActionArea';
 import CardMedia from '@mui/material/CardMedia';
-import CardContent from '@mui/material/CardContent';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
@@ -12,7 +11,7 @@ import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import { useAppContext } from '../context/AppContext';
 import { IMAGE_URL } from '../services/tmdb';
 
-// Shows one movie: poster, title, year and rating.
+// Shows one movie: poster, rating badge, title and year.
 // Clicking the card opens the movie details page.
 function MovieCard({ movie }) {
   const { isFavorite, toggleFavorite } = useAppContext();
@@ -25,63 +24,111 @@ function MovieCard({ movie }) {
   const rating = movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A';
 
   return (
-    // position relative lets us put the heart button on top of the poster
-    <Card sx={{ position: 'relative' }}>
+    // No box or border around the card: the poster is the star.
+    // position relative lets us put the heart button on top of the poster.
+    <Card
+      sx={{
+        position: 'relative',
+        bgcolor: 'transparent',
+        border: 'none',
+        boxShadow: 'none',
+        overflow: 'visible',
+        transition: 'transform 0.25s',
+        // On hover: the card lifts, the poster zooms in a little and gets a shadow
+        '&:hover': { transform: 'translateY(-4px)' },
+        '&:hover img': { transform: 'scale(1.06)' },
+        '&:hover .poster-frame': { boxShadow: 8 },
+      }}
+    >
       {/* The heart is outside the link, so clicking it does not open the details page */}
       <IconButton
         onClick={() => toggleFavorite(movie)}
         aria-label={favorite ? 'remove from favorites' : 'add to favorites'}
+        size="small"
         sx={{
           position: 'absolute',
           top: 8,
           right: 8,
-          zIndex: 1,
-          bgcolor: 'rgba(0, 0, 0, 0.5)',
-          '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.7)' },
+          zIndex: 2,
+          bgcolor: 'rgba(0, 0, 0, 0.55)',
+          backdropFilter: 'blur(4px)',
+          '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.75)' },
         }}
       >
         {favorite ? <FavoriteIcon color="error" /> : <FavoriteBorderIcon sx={{ color: 'white' }} />}
       </IconButton>
 
-      <CardActionArea component={Link} to={`/movie/${movie.id}`}>
-        {movie.poster_path ? (
-          <CardMedia
-            component="img"
-            image={IMAGE_URL + movie.poster_path}
-            alt={movie.title}
-            sx={{ aspectRatio: '2 / 3', objectFit: 'cover' }}
-          />
-        ) : (
-          // Some movies have no poster, so we show a plain box instead
+      <CardActionArea component={Link} to={`/movie/${movie.id}`} sx={{ borderRadius: '16px' }}>
+        {/* Frame with rounded corners. overflow hidden keeps the zoomed poster inside it. */}
+        <Box
+          className="poster-frame"
+          sx={{
+            position: 'relative',
+            borderRadius: '16px',
+            overflow: 'hidden',
+            transition: 'box-shadow 0.25s',
+          }}
+        >
+          {movie.poster_path ? (
+            <CardMedia
+              component="img"
+              image={IMAGE_URL + movie.poster_path}
+              alt={movie.title}
+              sx={{
+                aspectRatio: '2 / 3',
+                objectFit: 'cover',
+                display: 'block',
+                transition: 'transform 0.4s',
+              }}
+            />
+          ) : (
+            // Some movies have no poster, so we show a plain box instead
+            <Box
+              sx={{
+                aspectRatio: '2 / 3',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                bgcolor: 'action.hover',
+              }}
+            >
+              <Typography color="text.secondary">No image</Typography>
+            </Box>
+          )}
+
+          {/* Rating badge in the top left corner of the poster */}
           <Box
             sx={{
-              aspectRatio: '2 / 3',
+              position: 'absolute',
+              top: 8,
+              left: 8,
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center',
-              bgcolor: 'action.hover',
+              gap: 0.5,
+              px: 1,
+              py: 0.25,
+              borderRadius: 999,
+              bgcolor: 'rgba(0, 0, 0, 0.7)',
+              color: 'white',
             }}
           >
-            <Typography color="text.secondary">No image</Typography>
+            <StarIcon color="secondary" sx={{ fontSize: 16 }} />
+            <Typography variant="caption" sx={{ fontWeight: 700 }}>
+              {rating}
+            </Typography>
           </Box>
-        )}
+        </Box>
 
-        <CardContent>
+        {/* Title and year under the poster */}
+        <Box sx={{ pt: 1.5, px: 0.5 }}>
           {/* noWrap keeps long titles on one line with ... at the end */}
-          <Typography variant="subtitle1" noWrap>
+          <Typography variant="subtitle1" noWrap sx={{ fontWeight: 600 }} title={movie.title}>
             {movie.title}
           </Typography>
-
-          <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-            <Typography variant="body2" color="text.secondary">
-              {year}
-            </Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <StarIcon color="secondary" fontSize="small" />
-              <Typography variant="body2">{rating}</Typography>
-            </Box>
-          </Box>
-        </CardContent>
+          <Typography variant="body2" color="text.secondary">
+            {year}
+          </Typography>
+        </Box>
       </CardActionArea>
     </Card>
   );
