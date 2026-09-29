@@ -30,6 +30,8 @@ function BottomNav() {
 
   return (
     <Paper
+      component="nav"
+      aria-label="bottom"
       square
       elevation={8}
       sx={{

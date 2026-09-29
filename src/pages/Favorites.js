@@ -18,7 +18,7 @@ function Favorites() {
 
   return (
     <Container sx={{ py: 3 }}>
-      <SectionTitle>
+      <SectionTitle component="h1">
         My favorites
         {/* Small badge with how many movies are saved */}
         {favorites.length > 0 && (

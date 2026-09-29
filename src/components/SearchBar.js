@@ -25,6 +25,8 @@ function SearchBar({ value, onChange }) {
         '& .MuiOutlinedInput-input': { py: 1.75 },
       }}
       slotProps={{
+        // The box has no visible label, so this gives screen readers a name for it
+        htmlInput: { 'aria-label': 'Search movies' },
         input: {
           // Search icon on the left
           startAdornment: (

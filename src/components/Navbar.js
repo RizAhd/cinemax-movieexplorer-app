@@ -72,7 +72,7 @@ function Navbar() {
           {user ? (
             <>
               {/* Text buttons: hidden on phones (the bottom bar has the links there) */}
-              <Box sx={{ display: { xs: 'none', sm: 'flex' }, gap: 0.5 }}>
+              <Box component="nav" aria-label="main" sx={{ display: { xs: 'none', sm: 'flex' }, gap: 0.5 }}>
                 <Button
                   color={isActive('/') ? 'primary' : 'inherit'}
                   component={Link}

@@ -98,6 +98,8 @@ function MovieCard({ movie }) {
 
           {/* Rating badge in the top left corner of the poster */}
           <Box
+            role="img"
+            aria-label={`Rating ${rating} out of 10`}
             sx={{
               position: 'absolute',
               top: 8,

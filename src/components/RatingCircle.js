@@ -7,7 +7,11 @@ function RatingCircle({ value, size = 64 }) {
   const score = value || 0;
 
   return (
-    <Box sx={{ position: 'relative', display: 'inline-flex' }}>
+    <Box
+      role="img"
+      aria-label={score ? `Rating ${score.toFixed(1)} out of 10` : 'No rating yet'}
+      sx={{ position: 'relative', display: 'inline-flex' }}
+    >
       {/* The grey ring behind */}
       <CircularProgress
         variant="determinate"

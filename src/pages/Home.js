@@ -235,7 +235,7 @@ function Home() {
         />
       </Paper>
 
-      <SectionTitle>
+      <SectionTitle component="h1">
         {searchText === '' ? 'Trending this week' : `Results for "${searchText}"`}
       </SectionTitle>
 

@@ -34,11 +34,33 @@ function App() {
             pb: user ? { xs: 8, sm: 0 } : 0,
           }}
         >
+          {/* "Skip to content" link. It is hidden until a keyboard user presses Tab. */}
+          <Box
+            component="a"
+            href="#main-content"
+            sx={{
+              position: 'absolute',
+              left: -9999,
+              '&:focus': {
+                left: 16,
+                top: 8,
+                zIndex: 2000,
+                bgcolor: 'background.paper',
+                color: 'text.primary',
+                px: 2,
+                py: 1,
+                borderRadius: 2,
+              },
+            }}
+          >
+            Skip to content
+          </Box>
+
           {/* Navbar is inside BrowserRouter because its links need the router */}
           <Navbar />
 
           {/* The page content grows to fill the space between the navbar and the footer */}
-          <Box component="main" sx={{ flex: 1 }}>
+          <Box component="main" id="main-content" tabIndex={-1} sx={{ flex: 1, outline: 'none' }}>
             {/* PageFade makes each page fade in when the user changes page */}
             <PageFade>
               {/* Each Route shows one page for one url */}

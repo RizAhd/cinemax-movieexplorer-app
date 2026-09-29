@@ -4,7 +4,7 @@ import { createTheme } from '@mui/material/styles';
 const lightPalette = {
   mode: 'light',
   primary: { main: '#d32f2f' }, // red
-  secondary: { main: '#f5a623' }, // gold, used for rating stars
+  secondary: { main: '#c77800' }, // darker gold, so the stars are easy to see on light backgrounds
   background: {
     default: '#f6f4f1',
     paper: '#ffffff',
@@ -18,7 +18,8 @@ const lightPalette = {
 // Colors for dark mode (almost black page, dark grey cards)
 const darkPalette = {
   mode: 'dark',
-  primary: { main: '#ef5350' }, // lighter red so it is easy to see on dark
+  // lighter red so it is easy to see on dark, with dark text on it (white text is too faint on this red)
+  primary: { main: '#ef5350', contrastText: '#0b0b0f' },
   secondary: { main: '#ffc107' },
   background: {
     default: '#0b0b0f',
@@ -52,6 +53,20 @@ export function getTheme(mode) {
 
     // Change how some MUI components look everywhere in the app
     components: {
+      // For people who set "reduce motion" on their device: turn off animations and transitions
+      MuiCssBaseline: {
+        styleOverrides: `
+          @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+              animation-duration: 0.01ms !important;
+              animation-iteration-count: 1 !important;
+              transition-duration: 0.01ms !important;
+              transition-delay: 0ms !important;
+              scroll-behavior: auto !important;
+            }
+          }
+        `,
+      },
       // Remove the grey overlay MUI adds to papers in dark mode
       MuiPaper: {
         styleOverrides: {
