@@ -7,6 +7,7 @@ import { getTheme } from './theme';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import BottomNav from './components/BottomNav';
+import BackToTop from './components/BackToTop';
 import PageFade from './components/PageFade';
 import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/Login';
@@ -77,6 +78,9 @@ function App() {
 
         {/* Bottom bar for phones (it hides itself when nobody is logged in) */}
         <BottomNav />
+
+        {/* Round button that scrolls back to the top (it shows after scrolling down) */}
+        <BackToTop />
       </BrowserRouter>
     </ThemeProvider>
   );
