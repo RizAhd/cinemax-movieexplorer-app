@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { alpha } from '@mui/material/styles';
 import Container from '@mui/material/Container';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -7,13 +8,17 @@ import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
 import CircularProgress from '@mui/material/CircularProgress';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import StarIcon from '@mui/icons-material/Star';
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import LanguageIcon from '@mui/icons-material/Language';
 import CastList from '../components/CastList';
 import TrailerEmbed from '../components/TrailerEmbed';
 import ErrorMessage from '../components/ErrorMessage';
+import RatingCircle from '../components/RatingCircle';
+import SectionTitle from '../components/SectionTitle';
 import { getMovie } from '../services/movies';
 import { getErrorMessage } from '../services/errorMessage';
-import { IMAGE_URL } from '../services/tmdb';
+import { IMAGE_URL, BACKDROP_URL } from '../services/tmdb';
 
 // Details page for one movie
 function MovieDetails() {
@@ -57,10 +62,10 @@ function MovieDetails() {
     };
   }, [id, retryCount]);
 
-  // Small pieces of text for the info line
+  // Small pieces of text for the chips
   const year = movie && movie.release_date ? movie.release_date.slice(0, 4) : '';
   const runtime = movie && movie.runtime ? `${movie.runtime} min` : '';
-  const rating = movie && movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A';
+  const language = movie && movie.original_language ? movie.original_language.toUpperCase() : '';
 
   return (
     <Container sx={{ py: 3 }}>
@@ -77,86 +82,131 @@ function MovieDetails() {
       {error && <ErrorMessage message={error} onRetry={() => setRetryCount(retryCount + 1)} />}
 
       {!loading && !error && movie && (
-        // Column on phones (poster on top), row on bigger screens (poster on the left)
-        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3 }}>
-          {/* Poster */}
-          {movie.poster_path ? (
+        <Box>
+          {/* Wide backdrop picture that fades into the page color at the bottom */}
+          <Box
+            sx={{
+              position: 'relative',
+              height: { xs: 200, md: 340 },
+              borderRadius: '24px',
+              overflow: 'hidden',
+              bgcolor: 'action.hover',
+              backgroundImage: movie.backdrop_path ? `url(${BACKDROP_URL + movie.backdrop_path})` : 'none',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+            }}
+          >
             <Box
-              component="img"
-              src={IMAGE_URL + movie.poster_path}
-              alt={movie.title}
-              sx={{
-                width: '100%',
-                maxWidth: 300,
-                alignSelf: { xs: 'center', md: 'flex-start' },
-                borderRadius: 2,
-              }}
+              sx={(theme) => ({
+                position: 'absolute',
+                inset: 0,
+                background: `linear-gradient(to bottom, ${alpha(theme.palette.background.default, 0.1)} 0%, ${theme.palette.background.default} 100%)`,
+              })}
             />
-          ) : (
-            <Box
-              sx={{
-                width: '100%',
-                maxWidth: 300,
-                aspectRatio: '2 / 3',
-                alignSelf: { xs: 'center', md: 'flex-start' },
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                bgcolor: 'action.hover',
-                borderRadius: 2,
-              }}
-            >
-              <Typography color="text.secondary">No image</Typography>
-            </Box>
-          )}
+          </Box>
 
-          {/* Text details */}
-          {/* minWidth 0 lets the cast row scroll sideways instead of making the page wider */}
-          <Box sx={{ flex: 1, minWidth: 0 }}>
-            {/* Smaller title on phones so long names fit better */}
-            <Typography variant="h4" component="h1" sx={{ fontSize: { xs: '1.75rem', md: '2.125rem' } }}>
-              {movie.title}
-            </Typography>
-
-            {movie.tagline && (
-              <Typography variant="subtitle1" color="text.secondary" sx={{ fontStyle: 'italic' }}>
-                {movie.tagline}
-              </Typography>
+          {/* Poster and main info. The negative margin pulls them up over the backdrop. */}
+          <Box
+            sx={{
+              position: 'relative',
+              display: 'flex',
+              flexDirection: { xs: 'column', md: 'row' },
+              alignItems: { xs: 'center', md: 'flex-end' },
+              gap: { xs: 2, md: 4 },
+              px: { md: 4 },
+              mt: { xs: -10, md: -16 },
+              textAlign: { xs: 'center', md: 'left' },
+            }}
+          >
+            {/* Poster */}
+            {movie.poster_path ? (
+              <Box
+                component="img"
+                src={IMAGE_URL + movie.poster_path}
+                alt={movie.title}
+                sx={{
+                  width: { xs: 160, md: 250 },
+                  flexShrink: 0,
+                  borderRadius: '16px',
+                  boxShadow: 8,
+                }}
+              />
+            ) : (
+              <Box
+                sx={{
+                  width: { xs: 160, md: 250 },
+                  flexShrink: 0,
+                  aspectRatio: '2 / 3',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  bgcolor: 'action.hover',
+                  borderRadius: '16px',
+                }}
+              >
+                <Typography color="text.secondary">No image</Typography>
+              </Box>
             )}
 
-            {/* Year, runtime and rating on one line */}
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, my: 2, flexWrap: 'wrap' }}>
-              {year && <Typography color="text.secondary">{year}</Typography>}
-              {runtime && <Typography color="text.secondary">{runtime}</Typography>}
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <StarIcon color="secondary" fontSize="small" />
-                <Typography>{rating}</Typography>
+            {/* Title, rating, chips and genres */}
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              <Typography
+                variant="h4"
+                component="h1"
+                sx={{ fontSize: { xs: '1.75rem', md: '2.5rem' }, lineHeight: 1.15 }}
+              >
+                {movie.title}
+              </Typography>
+
+              {movie.tagline && (
+                <Typography variant="subtitle1" color="text.secondary" sx={{ fontStyle: 'italic', mt: 0.5 }}>
+                  {movie.tagline}
+                </Typography>
+              )}
+
+              {/* Rating circle and the year, runtime and language chips */}
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: { xs: 'center', md: 'flex-start' },
+                  gap: 2,
+                  flexWrap: 'wrap',
+                  my: 2,
+                }}
+              >
+                <RatingCircle value={movie.vote_average} />
+                {year && <Chip variant="outlined" icon={<CalendarMonthIcon />} label={year} />}
+                {runtime && <Chip variant="outlined" icon={<AccessTimeIcon />} label={runtime} />}
+                {language && <Chip variant="outlined" icon={<LanguageIcon />} label={language} />}
+              </Box>
+
+              {/* Genres */}
+              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', justifyContent: { xs: 'center', md: 'flex-start' } }}>
+                {movie.genres.map((genre) => (
+                  <Chip key={genre.id} label={genre.name} color="primary" />
+                ))}
               </Box>
             </Box>
+          </Box>
 
-            {/* Genres */}
-            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 2 }}>
-              {movie.genres.map((genre) => (
-                <Chip key={genre.id} label={genre.name} />
-              ))}
-            </Box>
-
-            {/* Overview */}
-            <Typography variant="h6" sx={{ mb: 1 }}>
-              Overview
+          {/* Sections under the header */}
+          <Box sx={{ mt: 5 }}>
+            <SectionTitle>Overview</SectionTitle>
+            <Typography sx={{ maxWidth: 800, lineHeight: 1.8 }}>
+              {movie.overview || 'No overview available.'}
             </Typography>
-            <Typography>{movie.overview || 'No overview available.'}</Typography>
+          </Box>
 
-            {/* Trailer (the videos came with the movie because of append_to_response) */}
-            <Typography variant="h6" sx={{ mt: 3, mb: 1 }}>
-              Trailer
-            </Typography>
+          {/* Trailer (the videos came with the movie because of append_to_response) */}
+          <Box sx={{ mt: 5 }}>
+            <SectionTitle>Trailer</SectionTitle>
             <TrailerEmbed videos={movie.videos.results} />
+          </Box>
 
-            {/* Cast (it came with the movie because of append_to_response) */}
-            <Typography variant="h6" sx={{ mt: 3, mb: 1 }}>
-              Cast
-            </Typography>
+          {/* Cast (it came with the movie because of append_to_response) */}
+          <Box sx={{ mt: 5 }}>
+            <SectionTitle>Cast</SectionTitle>
             <CastList cast={movie.credits.cast} />
           </Box>
         </Box>
