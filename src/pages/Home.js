@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
@@ -52,6 +53,27 @@ function Home() {
     clearMoreError,
     hasMore,
   } = useMovies();
+
+  // Search results scroll forever, trending keeps the Load More button
+  const searching = searchText !== '';
+  const bottomRef = useRef(null);
+
+  useEffect(() => {
+    if (!searching || !bottomRef.current) {
+      return;
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          loadMore();
+        }
+      },
+      { rootMargin: '200px' }
+    );
+    observer.observe(bottomRef.current);
+    return () => observer.disconnect();
+    // movies and filters are here so it checks again after a page or a filter change
+  }, [searching, loadMore, movies, filters]);
 
   // Only the movies that match the chosen filters
   const filteredMovies = movies.filter((movie) => {
@@ -227,9 +249,15 @@ function Home() {
             </Typography>
           )}
 
-          {/* The button that loads the next page. It stays on screen while loading, is disabled,
-              and shows its own spinner, so the user always sees something is happening. */}
-          {hasMore && !moreError && (
+          {searching && <Box ref={bottomRef} sx={{ height: 1 }} />}
+
+          {searching && loadingMore && (
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+              <CircularProgress />
+            </Box>
+          )}
+
+          {!searching && hasMore && !moreError && (
             <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
               <Button
                 variant="outlined"
@@ -245,7 +273,6 @@ function Home() {
             </Box>
           )}
 
-          {/* If loading more failed, show the error. Retry clears it, so the Load More button comes back. */}
           {moreError && <ErrorMessage message={moreError} onRetry={clearMoreError} />}
         </Box>
       )}
