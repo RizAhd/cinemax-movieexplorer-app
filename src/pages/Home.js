@@ -7,6 +7,7 @@ import Skeleton from '@mui/material/Skeleton';
 import Switch from '@mui/material/Switch';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import CircularProgress from '@mui/material/CircularProgress';
+import FilterAltOffIcon from '@mui/icons-material/FilterAltOff';
 import Box from '@mui/material/Box';
 import MovieGrid from '../components/MovieGrid';
 import SearchBar from '../components/SearchBar';
@@ -88,6 +89,9 @@ function Home() {
     return genreOk && yearOk && ratingOk;
   });
 
+  // True when at least one filter is chosen
+  const hasFilters = filters.genre !== '' || filters.year !== '' || filters.rating !== '';
+
   // The banner shows the first trending movie that has a wide picture.
   // It only shows for trending (no search text).
   const heroMovie = searchText === '' ? movies.find((movie) => movie.backdrop_path) : null;
@@ -108,24 +112,64 @@ function Home() {
         />
       )}
 
-      <Box sx={{ mb: 3 }}>
-        <SearchBar value={query} onChange={setQuery} />
-      </Box>
+      {/* One toolbar card for the search bar, the filters and the Load More switch */}
+      <Paper variant="outlined" sx={{ p: 2, mb: 4, borderRadius: '20px' }}>
+        {/* Grid: on a phone the search bar has a row, then Genre, then Year and Rating side by side.
+            On a big screen everything is in one row and the search bar is twice as wide. */}
+        <Box
+          sx={{
+            display: 'grid',
+            gap: 2,
+            gridTemplateColumns: { xs: '1fr 1fr', md: '2fr 1fr 1fr 1fr' },
+          }}
+        >
+          <Box sx={{ gridColumn: { xs: '1 / -1', md: 'auto' } }}>
+            <SearchBar value={query} onChange={setQuery} />
+          </Box>
+          <FilterBar filters={filters} genres={genres} onChange={setFilters} />
+        </Box>
 
-      {/* One panel for the filters and the Load More switch */}
-      <Paper variant="outlined" sx={{ p: 2, mb: 4, borderRadius: '16px' }}>
-        <FilterBar filters={filters} genres={genres} onChange={setFilters} />
-        {/* Switch between infinite scroll and the Load More button */}
-        <FormControlLabel
-          control={
-            <Switch
-              checked={loadMode === 'button'}
-              onChange={(event) => setLoadMode(event.target.checked ? 'button' : 'scroll')}
-            />
-          }
-          label="Use Load More button"
-          sx={{ mt: 1 }}
-        />
+        {/* Bottom row: how many movies and a Clear button on the left, the Load More switch on the right */}
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: 1,
+            mt: 1.5,
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minHeight: 36 }}>
+            {!loading && !error && (
+              <Typography variant="body2" color="text.secondary">
+                {visibleMovies.length} {visibleMovies.length === 1 ? 'movie' : 'movies'}
+              </Typography>
+            )}
+            {hasFilters && (
+              <Button
+                size="small"
+                startIcon={<FilterAltOffIcon />}
+                onClick={() => setFilters({ genre: '', year: '', rating: '' })}
+              >
+                Clear filters
+              </Button>
+            )}
+          </Box>
+
+          {/* Switch between infinite scroll and the Load More button */}
+          <FormControlLabel
+            control={
+              <Switch
+                size="small"
+                checked={loadMode === 'button'}
+                onChange={(event) => setLoadMode(event.target.checked ? 'button' : 'scroll')}
+              />
+            }
+            label={<Typography variant="body2">Use Load More button</Typography>}
+            sx={{ mr: 0 }}
+          />
+        </Box>
       </Paper>
 
       <SectionTitle component="h1">
