@@ -3,6 +3,7 @@ import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import Paper from '@mui/material/Paper';
+import Skeleton from '@mui/material/Skeleton';
 import Switch from '@mui/material/Switch';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -206,6 +207,14 @@ function Home() {
         </Box>
       )}
 
+      {/* Placeholder with the banner's size, so the page does not jump when it loads */}
+      {loading && searchText === '' && (
+        <Skeleton
+          variant="rounded"
+          sx={{ height: { xs: 340, md: 460 }, borderRadius: '24px', mb: 3 }}
+        />
+      )}
+
       <Box sx={{ mb: 3 }}>
         <SearchBar value={query} onChange={setQuery} />
       </Box>
@@ -230,11 +239,8 @@ function Home() {
         {searchText === '' ? 'Trending this week' : `Results for "${searchText}"`}
       </SectionTitle>
 
-      {loading && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-          <CircularProgress />
-        </Box>
-      )}
+      {/* While loading, show grey placeholder cards instead of a spinner */}
+      {loading && <MovieGrid loading />}
 
       {error && <ErrorMessage message={error} onRetry={() => setRetryCount(retryCount + 1)} />}
 
