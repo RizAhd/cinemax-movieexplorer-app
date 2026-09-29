@@ -13,6 +13,17 @@ function SearchBar({ value, onChange }) {
       placeholder="Search for a movie..."
       value={value}
       onChange={(event) => onChange(event.target.value)}
+      // A tall pill shaped box with a card colored background
+      sx={{
+        '& .MuiOutlinedInput-root': {
+          borderRadius: 999,
+          bgcolor: 'background.paper',
+          pl: 2,
+          pr: 1,
+          fontSize: '1.05rem',
+        },
+        '& .MuiOutlinedInput-input': { py: 1.75 },
+      }}
       slotProps={{
         input: {
           // Search icon on the left

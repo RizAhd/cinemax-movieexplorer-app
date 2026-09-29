@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
+import Paper from '@mui/material/Paper';
 import Switch from '@mui/material/Switch';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -10,6 +11,7 @@ import MovieGrid from '../components/MovieGrid';
 import SearchBar from '../components/SearchBar';
 import FilterBar from '../components/FilterBar';
 import HeroBanner from '../components/HeroBanner';
+import SectionTitle from '../components/SectionTitle';
 import ErrorMessage from '../components/ErrorMessage';
 import useDebounce from '../hooks/useDebounce';
 import useLocalStorage from '../hooks/useLocalStorage';
@@ -208,7 +210,8 @@ function Home() {
         <SearchBar value={query} onChange={setQuery} />
       </Box>
 
-      <Box sx={{ mb: 3 }}>
+      {/* One panel for the filters and the Load More switch */}
+      <Paper variant="outlined" sx={{ p: 2, mb: 4, borderRadius: '16px' }}>
         <FilterBar filters={filters} genres={genres} onChange={setFilters} />
         {/* Switch between infinite scroll and the Load More button */}
         <FormControlLabel
@@ -221,11 +224,11 @@ function Home() {
           label="Use Load More button"
           sx={{ mt: 1 }}
         />
-      </Box>
+      </Paper>
 
-      <Typography variant="h5" component="h1" sx={{ mb: 2 }}>
+      <SectionTitle>
         {searchText === '' ? 'Trending this week' : `Results for "${searchText}"`}
-      </Typography>
+      </SectionTitle>
 
       {loading && (
         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
