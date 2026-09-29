@@ -3,7 +3,7 @@
 A web app to search for movies, see what is trending, read the details, watch trailers and save favorites.
 All movie data comes from the [TMDb API](https://developers.themoviedb.org/3).
 
-**Live demo:** _add the Vercel link here after deploying_
+**Live demo:** https://cinemax-movieexplorer-app.vercel.app/
 
 ![Home page in dark mode](docs/screenshots/home-desktop.png)
 
