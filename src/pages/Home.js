@@ -92,15 +92,16 @@ function Home() {
   // True when at least one filter is chosen
   const hasFilters = filters.genre !== '' || filters.year !== '' || filters.rating !== '';
 
-  // The banner shows the first trending movie that has a wide picture.
+  // The banner slides through the first 5 trending movies that have a wide picture.
   // It only shows for trending (no search text).
-  const heroMovie = searchText === '' ? movies.find((movie) => movie.backdrop_path) : null;
+  const heroMovies =
+    searchText === '' ? movies.filter((movie) => movie.backdrop_path).slice(0, 5) : [];
 
   return (
     <Container sx={{ py: 3 }}>
-      {!loading && !error && heroMovie && (
+      {!loading && !error && heroMovies.length > 0 && (
         <Box sx={{ mb: 3 }}>
-          <HeroBanner movie={heroMovie} />
+          <HeroBanner movies={heroMovies} />
         </Box>
       )}
 
@@ -108,7 +109,7 @@ function Home() {
       {loading && searchText === '' && (
         <Skeleton
           variant="rounded"
-          sx={{ height: { xs: 340, md: 460 }, borderRadius: '24px', mb: 3 }}
+          sx={{ height: { xs: 360, md: 480 }, borderRadius: '24px', mb: 3 }}
         />
       )}
 
