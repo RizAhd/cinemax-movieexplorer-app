@@ -10,7 +10,7 @@ import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
 import MovieFilterIcon from '@mui/icons-material/MovieFilter';
-import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
+import PersonOutlinedIcon from '@mui/icons-material/PersonOutlined';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
@@ -93,7 +93,7 @@ function Login() {
               input: {
                 startAdornment: (
                   <InputAdornment position="start">
-                    <PersonOutlineIcon />
+                    <PersonOutlinedIcon />
                   </InputAdornment>
                 ),
               },
