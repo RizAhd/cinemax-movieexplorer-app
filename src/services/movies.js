@@ -7,11 +7,14 @@ export async function getTrending() {
   return response.data.results;
 }
 
-// Search movies by name.
-// Returns an array of movies that match the text.
-export async function searchMovies(query) {
+// Search movies by name. TMDb sends results in pages of about 20 movies.
+// Returns { results: [movies], totalPages: number }
+export async function searchMovies(query, page = 1) {
   const response = await tmdb.get('/search/movie', {
-    params: { query: query },
+    params: { query: query, page: page },
   });
-  return response.data.results;
+  return {
+    results: response.data.results,
+    totalPages: response.data.total_pages,
+  };
 }
