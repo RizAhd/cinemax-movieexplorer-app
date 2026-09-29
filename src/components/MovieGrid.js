@@ -1,4 +1,5 @@
 import Box from '@mui/material/Box';
+import Grow from '@mui/material/Grow';
 import MovieCard from './MovieCard';
 import MovieCardSkeleton from './MovieCardSkeleton';
 
@@ -24,7 +25,15 @@ function MovieGrid({ movies = [], loading = false }) {
     >
       {loading
         ? Array.from({ length: SKELETON_COUNT }, (_, index) => <MovieCardSkeleton key={index} />)
-        : movies.map((movie) => <MovieCard key={movie.id} movie={movie} />)}
+        : movies.map((movie, index) => (
+            // Each card grows in. The delay is a little longer for each card in a row of 10,
+            // so they appear one after another. (Grow needs a Box around the card.)
+            <Grow in key={movie.id} timeout={400} style={{ transitionDelay: `${(index % 10) * 40}ms` }}>
+              <Box>
+                <MovieCard movie={movie} />
+              </Box>
+            </Grow>
+          ))}
     </Box>
   );
 }
