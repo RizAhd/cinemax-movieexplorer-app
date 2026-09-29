@@ -20,8 +20,9 @@ function Home() {
   // The search text is saved in localStorage, so the last search is remembered
   const [query, setQuery] = useLocalStorage('lastSearch', '');
 
-  // Filters: genre is '' (all) or a genre id. Year and rating come in the next parts.
-  const [filters, setFilters] = useState({ genre: '' });
+  // Filters: '' means "all". genre is a genre id, year is a number like 1999.
+  // Rating comes in the next part.
+  const [filters, setFilters] = useState({ genre: '', year: '' });
   // The genre list for the dropdown
   const [genres, setGenres] = useState([]);
 
@@ -162,7 +163,14 @@ function Home() {
   // Only the movies that match the chosen filters
   const visibleMovies = movies.filter((movie) => {
     const movieGenres = movie.genre_ids || [];
-    return filters.genre === '' || movieGenres.includes(filters.genre);
+    // release_date looks like "1999-10-15", so the first 4 letters are the year
+    const movieYear = movie.release_date ? Number(movie.release_date.slice(0, 4)) : null;
+
+    const genreOk = filters.genre === '' || movieGenres.includes(filters.genre);
+    const yearOk = filters.year === '' || movieYear === filters.year;
+
+    // A movie must pass every filter
+    return genreOk && yearOk;
   });
 
   return (
