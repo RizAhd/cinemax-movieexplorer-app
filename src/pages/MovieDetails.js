@@ -8,6 +8,7 @@ import Chip from '@mui/material/Chip';
 import CircularProgress from '@mui/material/CircularProgress';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import StarIcon from '@mui/icons-material/Star';
+import CastList from '../components/CastList';
 import { getMovie } from '../services/movies';
 
 // Start of every TMDb poster url
@@ -107,7 +108,8 @@ function MovieDetails() {
           )}
 
           {/* Text details */}
-          <Box sx={{ flex: 1 }}>
+          {/* minWidth 0 lets the cast row scroll sideways instead of making the page wider */}
+          <Box sx={{ flex: 1, minWidth: 0 }}>
             <Typography variant="h4" component="h1">
               {movie.title}
             </Typography>
@@ -140,6 +142,12 @@ function MovieDetails() {
               Overview
             </Typography>
             <Typography>{movie.overview || 'No overview available.'}</Typography>
+
+            {/* Cast (it came with the movie because of append_to_response) */}
+            <Typography variant="h6" sx={{ mt: 3, mb: 1 }}>
+              Cast
+            </Typography>
+            <CastList cast={movie.credits.cast} />
           </Box>
         </Box>
       )}
