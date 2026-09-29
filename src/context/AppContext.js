@@ -14,7 +14,15 @@ export function AppProvider({ children }) {
     setMode(mode === 'light' ? 'dark' : 'light');
   };
 
-  const value = { mode, toggleMode };
+  // The logged in user (null means nobody is logged in), saved in localStorage
+  const [user, setUser] = useLocalStorage('user', null);
+
+  // Mock login: we just save the username, there is no real server
+  const login = (username) => {
+    setUser({ username });
+  };
+
+  const value = { mode, toggleMode, user, login };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }
