@@ -27,7 +27,41 @@ export function AppProvider({ children }) {
     setUser(null);
   };
 
-  const value = { mode, toggleMode, user, login, logout };
+  // The favorite movies, saved in localStorage
+  const [favorites, setFavorites] = useLocalStorage('favorites', []);
+
+  // Check if a movie is already in the favorites
+  const isFavorite = (movieId) => {
+    return favorites.some((movie) => movie.id === movieId);
+  };
+
+  // Add the movie if it is not a favorite yet, or remove it if it is
+  const toggleFavorite = (movie) => {
+    if (isFavorite(movie.id)) {
+      setFavorites(favorites.filter((item) => item.id !== movie.id));
+    } else {
+      // Save only what MovieCard needs, so the saved data stays small
+      const smallMovie = {
+        id: movie.id,
+        title: movie.title,
+        poster_path: movie.poster_path,
+        release_date: movie.release_date,
+        vote_average: movie.vote_average,
+      };
+      setFavorites([...favorites, smallMovie]);
+    }
+  };
+
+  const value = {
+    mode,
+    toggleMode,
+    user,
+    login,
+    logout,
+    favorites,
+    isFavorite,
+    toggleFavorite,
+  };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }
