@@ -1,5 +1,6 @@
 import { createContext, useContext } from 'react';
 import useLocalStorage from '../hooks/useLocalStorage';
+import { loginUser } from '../services/auth';
 
 // Checks for the values we read from localStorage. A saved value that fails its check is ignored.
 const isValidMode = (value) => value === 'light' || value === 'dark';
@@ -26,9 +27,15 @@ export function AppProvider({ children }) {
   // The logged in user (null means nobody is logged in), saved in localStorage
   const [user, setUser] = useLocalStorage('user', null, isValidUser);
 
-  // Mock login: we just save the username, there is no real server
-  const login = (username) => {
-    setUser({ username });
+  // Log in with an email or a username and a password. The account service checks them.
+  // Returns { ok: true } or { ok: false, error: 'a message to show the user' }
+  const login = async (identifier, password) => {
+    const result = await loginUser(identifier, password);
+    if (result.ok) {
+      // Save only what the app needs to know: first name, username and email
+      setUser(result.user);
+    }
+    return result;
   };
 
   // Sign out: clear the saved user

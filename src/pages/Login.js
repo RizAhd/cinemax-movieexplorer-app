@@ -7,6 +7,8 @@ import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
+import Alert from '@mui/material/Alert';
+import CircularProgress from '@mui/material/CircularProgress';
 import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
 import MovieFilterIcon from '@mui/icons-material/MovieFilter';
@@ -15,38 +17,56 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 
-// Login form with simple mock validation
+// Login form: an email or a username, and a password
 function Login() {
   // Keep what the user types in state
-  const [username, setUsername] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   // Show the password as text (true) or as dots (false)
   const [showPassword, setShowPassword] = useState(false);
   // Error messages to show under the fields
-  const [usernameError, setUsernameError] = useState('');
+  const [identifierError, setIdentifierError] = useState('');
   const [passwordError, setPasswordError] = useState('');
+  // The message for a wrong login, shown at the top of the form
+  const [formError, setFormError] = useState('');
+  // true while we check the login
+  const [submitting, setSubmitting] = useState(false);
 
   const { user, login } = useAppContext();
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     // Stop the page from reloading when the form is sent
     event.preventDefault();
 
-    // Check both fields
-    const newUsernameError = username.trim() === '' ? 'Username is required' : '';
-    const newPasswordError =
-      password.length < 4 ? 'Password must be at least 4 characters' : '';
-
-    setUsernameError(newUsernameError);
-    setPasswordError(newPasswordError);
-
-    // Stop here if there is any error
-    if (newUsernameError || newPasswordError) {
+    // Ignore a second click while the first one is still being checked
+    if (submitting) {
       return;
     }
 
-    // All good: save the user. The redirect below then sends them to the home page.
-    login(username.trim());
+    // Both fields must be filled in. We do not check password rules here, only when signing up.
+    const newIdentifierError = identifier.trim() === '' ? 'Enter your email or username' : '';
+    const newPasswordError = password === '' ? 'Enter your password' : '';
+
+    setIdentifierError(newIdentifierError);
+    setPasswordError(newPasswordError);
+    setFormError('');
+
+    if (newIdentifierError || newPasswordError) {
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const result = await login(identifier, password);
+      // If it worked, the user is saved and the redirect below sends them to the home page
+      if (!result.ok) {
+        setFormError(result.error);
+      }
+    } catch (error) {
+      setFormError('Something went wrong. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   // Already logged in (or just logged in): go to the home page
@@ -101,15 +121,26 @@ function Login() {
           <Typography color="text.secondary">Login to explore movies</Typography>
         </Box>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} noValidate>
+          {/* A wrong email/username or password shows up here */}
+          {formError && (
+            <Alert severity="error" sx={{ mb: 1 }}>
+              {formError}
+            </Alert>
+          )}
+
           <TextField
-            label="Username"
+            label="Email or username"
             fullWidth
             margin="normal"
-            value={username}
-            onChange={(event) => setUsername(event.target.value)}
-            error={usernameError !== ''}
-            helperText={usernameError}
+            autoComplete="username"
+            value={identifier}
+            onChange={(event) => {
+              setIdentifier(event.target.value);
+              setFormError('');
+            }}
+            error={identifierError !== ''}
+            helperText={identifierError}
             slotProps={{
               input: {
                 startAdornment: (
@@ -125,8 +156,12 @@ function Login() {
             type={showPassword ? 'text' : 'password'}
             fullWidth
             margin="normal"
+            autoComplete="current-password"
             value={password}
-            onChange={(event) => setPassword(event.target.value)}
+            onChange={(event) => {
+              setPassword(event.target.value);
+              setFormError('');
+            }}
             error={passwordError !== ''}
             helperText={passwordError}
             slotProps={{
@@ -151,15 +186,19 @@ function Login() {
               },
             }}
           />
-          <Button type="submit" variant="contained" size="large" fullWidth sx={{ mt: 2 }}>
-            Login
+          {/* While we check the login the button is disabled and shows a spinner */}
+          <Button
+            type="submit"
+            variant="contained"
+            size="large"
+            fullWidth
+            disabled={submitting}
+            startIcon={submitting ? <CircularProgress size={18} color="inherit" /> : null}
+            sx={{ mt: 2 }}
+          >
+            {submitting ? 'Logging in...' : 'Login'}
           </Button>
         </form>
-
-        {/* Hint for the demo login */}
-        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 2, textAlign: 'center' }}>
-          Demo login: any username and a password with 4 or more characters.
-        </Typography>
       </Paper>
     </Box>
   );
