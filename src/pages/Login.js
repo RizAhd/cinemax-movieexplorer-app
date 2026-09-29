@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import { alpha } from '@mui/material/styles';
 import { useAppContext } from '../context/AppContext';
 import Box from '@mui/material/Box';
@@ -26,8 +26,7 @@ function Login() {
   const [usernameError, setUsernameError] = useState('');
   const [passwordError, setPasswordError] = useState('');
 
-  const { login } = useAppContext();
-  const navigate = useNavigate();
+  const { user, login } = useAppContext();
 
   const handleSubmit = (event) => {
     // Stop the page from reloading when the form is sent
@@ -46,10 +45,14 @@ function Login() {
       return;
     }
 
-    // All good: save the user and go to the home page
+    // All good: save the user. The redirect below then sends them to the home page.
     login(username.trim());
-    navigate('/');
   };
+
+  // Already logged in (or just logged in): go to the home page
+  if (user) {
+    return <Navigate to="/" replace />;
+  }
 
   return (
     // Full height area with soft red and gold glows in the background
