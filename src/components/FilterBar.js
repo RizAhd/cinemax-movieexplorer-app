@@ -12,6 +12,9 @@ function FilterBar({ filters, genres, onChange }) {
     years.push(year);
   }
 
+  // Minimum ratings the user can choose
+  const ratings = [9, 8, 7, 6, 5];
+
   return (
     <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
       {/* Genre dropdown. The empty value means "no filter" */}
@@ -44,6 +47,23 @@ function FilterBar({ filters, genres, onChange }) {
         {years.map((year) => (
           <MenuItem key={year} value={year}>
             {year}
+          </MenuItem>
+        ))}
+      </TextField>
+
+      {/* Rating dropdown: shows movies with this rating or higher */}
+      <TextField
+        select
+        label="Rating"
+        size="small"
+        value={filters.rating}
+        onChange={(event) => onChange({ ...filters, rating: event.target.value })}
+        sx={{ minWidth: 130 }}
+      >
+        <MenuItem value="">All ratings</MenuItem>
+        {ratings.map((rating) => (
+          <MenuItem key={rating} value={rating}>
+            {rating}+ stars
           </MenuItem>
         ))}
       </TextField>

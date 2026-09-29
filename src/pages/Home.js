@@ -20,9 +20,9 @@ function Home() {
   // The search text is saved in localStorage, so the last search is remembered
   const [query, setQuery] = useLocalStorage('lastSearch', '');
 
-  // Filters: '' means "all". genre is a genre id, year is a number like 1999.
-  // Rating comes in the next part.
-  const [filters, setFilters] = useState({ genre: '', year: '' });
+  // Filters: '' means "all". genre is a genre id, year is a number like 1999,
+  // rating is the lowest rating to show, like 7.
+  const [filters, setFilters] = useState({ genre: '', year: '', rating: '' });
   // The genre list for the dropdown
   const [genres, setGenres] = useState([]);
 
@@ -168,9 +168,11 @@ function Home() {
 
     const genreOk = filters.genre === '' || movieGenres.includes(filters.genre);
     const yearOk = filters.year === '' || movieYear === filters.year;
+    // vote_average is the rating from 0 to 10
+    const ratingOk = filters.rating === '' || movie.vote_average >= filters.rating;
 
     // A movie must pass every filter
-    return genreOk && yearOk;
+    return genreOk && yearOk && ratingOk;
   });
 
   return (
