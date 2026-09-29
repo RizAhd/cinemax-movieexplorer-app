@@ -5,7 +5,11 @@ import CardMedia from '@mui/material/CardMedia';
 import CardContent from '@mui/material/CardContent';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
+import IconButton from '@mui/material/IconButton';
 import StarIcon from '@mui/icons-material/Star';
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
+import { useAppContext } from '../context/AppContext';
 
 // Start of every TMDb poster url
 const IMAGE_URL = 'https://image.tmdb.org/t/p/w500';
@@ -13,6 +17,9 @@ const IMAGE_URL = 'https://image.tmdb.org/t/p/w500';
 // Shows one movie: poster, title, year and rating.
 // Clicking the card opens the movie details page.
 function MovieCard({ movie }) {
+  const { isFavorite, toggleFavorite } = useAppContext();
+  const favorite = isFavorite(movie.id);
+
   // release_date looks like "2024-05-17", so we take the first 4 letters
   const year = movie.release_date ? movie.release_date.slice(0, 4) : 'N/A';
 
@@ -20,7 +27,24 @@ function MovieCard({ movie }) {
   const rating = movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A';
 
   return (
-    <Card>
+    // position relative lets us put the heart button on top of the poster
+    <Card sx={{ position: 'relative' }}>
+      {/* The heart is outside the link, so clicking it does not open the details page */}
+      <IconButton
+        onClick={() => toggleFavorite(movie)}
+        aria-label={favorite ? 'remove from favorites' : 'add to favorites'}
+        sx={{
+          position: 'absolute',
+          top: 8,
+          right: 8,
+          zIndex: 1,
+          bgcolor: 'rgba(0, 0, 0, 0.5)',
+          '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.7)' },
+        }}
+      >
+        {favorite ? <FavoriteIcon color="error" /> : <FavoriteBorderIcon sx={{ color: 'white' }} />}
+      </IconButton>
+
       <CardActionArea component={Link} to={`/movie/${movie.id}`}>
         {movie.poster_path ? (
           <CardMedia
