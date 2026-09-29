@@ -30,7 +30,9 @@ function UserBadge({ user }) {
           display: 'flex',
           alignItems: 'center',
           gap: 1,
-          mr: { xs: 0.5, sm: 1.5 },
+          // Same height as the other buttons in the top bar, and a little space on the right
+          minHeight: 40,
+          pr: { md: 1 },
           color: 'inherit',
           textDecoration: 'none',
           borderRadius: 999,
@@ -51,11 +53,11 @@ function UserBadge({ user }) {
           {getInitial(name)}
         </Avatar>
 
-        {/* The greeting is hidden on phones to save space. noWrap cuts a long name with ... */}
+        {/* The greeting is hidden on phones and tablets to save space. noWrap cuts a long name with ... */}
         <Typography
           variant="body2"
           noWrap
-          sx={{ display: { xs: 'none', sm: 'block' }, maxWidth: { sm: 110, md: 180 }, fontWeight: 600 }}
+          sx={{ display: { xs: 'none', md: 'block' }, maxWidth: { md: 130, lg: 180 }, fontWeight: 600 }}
         >
           Hi, {name}
         </Typography>
